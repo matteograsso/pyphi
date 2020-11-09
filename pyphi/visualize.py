@@ -386,7 +386,7 @@ def plot_node_qfolds2D(r,relation,node_indices,node_labels,go,show_edges,legend_
                             if node not in legend_nodes:
 
                                 legend_nodes.append(node)
-                            return legend_nodes
+                            
 
 def plot_node_qfolds3D(r,relation,show_mesh,node_labels,go,fig,legend_mechanisms,x,y,z,i,j,k,three_relations_sizes):
                     
@@ -419,7 +419,7 @@ def plot_node_qfolds3D(r,relation,show_mesh,node_labels,go,fig,legend_mechanisms
                             if node not in legend_nodes:
 
                                 legend_nodes.append(node)
-                    return legend_nodes
+                    
 
 def plot_mechanism_qfolds2D(r,relation,ces,show_edges,node_labels,go,fig,two_relations_coords,two_relations_sizes,legend_mechanisms,relation_color):
                     mechanisms_list = [distinction.mechanism for distinction in ces]
@@ -449,8 +449,8 @@ def plot_mechanism_qfolds2D(r,relation,ces,show_edges,node_labels,go,fig,two_rel
                             if mechanism_label not in legend_mechanisms:
 
                                 legend_mechanisms.append(mechanism_label)
-                        
-                            return legend_mechanisms
+                            
+                            
 
 
 def plot_mechanism_qfolds3D(r,relation,ces,show_mesh,node_labels,go,fig,legend_mechanisms,x,y,z,i,j,k,three_relations_sizes):
@@ -485,7 +485,8 @@ def plot_mechanism_qfolds3D(r,relation,ces,show_mesh,node_labels,go,fig,legend_m
                             fig.add_trace(triangle_three_relation_trace)
                             if mechanism_label not in legend_mechanisms:
                                 legend_mechanisms.append(mechanism_label)
-                            return legend_mechanisms
+                            
+                            
 
 def plot_relation_purview_qfolds2D(r,relation,show_edges,node_labels,go,fig,two_relations_coords,two_relations_sizes,legend_relation_purviews,relation_color):
                         purview = relation.purview
@@ -513,7 +514,7 @@ def plot_relation_purview_qfolds2D(r,relation,show_edges,node_labels,go,fig,two_
                         if purview_label not in legend_relation_purviews:
                             legend_relation_purviews.append(purview_label)
                         
-                        return legend_relation_purviews
+                        
                     
 def plot_relation_purview_qfolds3D(r,relation,show_edges,node_labels,go,fig,two_relations_coords,two_relations_sizes,legend_relation_purviews,relation_color,x,y,z,i,j,k,three_relations_sizes):
                     
@@ -546,7 +547,7 @@ def plot_relation_purview_qfolds3D(r,relation,show_edges,node_labels,go,fig,two_
                     if purview_label not in legend_relation_purviews:
                         legend_relation_purviews.append(purview_label)
                     
-                    return legend_relation_purviews
+                    
         
 def plot_per_mechanism_purview_qfolds2D(r,relation,show_edges,node_labels,go,fig,two_relations_coords,two_relations_sizes,legend_mechanism_purviews,relation_color):
                     for relatum in relation.relata:
@@ -579,7 +580,7 @@ def plot_per_mechanism_purview_qfolds2D(r,relation,show_edges,node_labels,go,fig
                         if mechanism_purview_label not in legend_mechanism_purviews:
                             legend_mechanism_purviews.append(mechanism_purview_label)
                     
-                    return legend_mechanism_purviews
+                    
                     
                     
                     
@@ -620,7 +621,7 @@ def plot_per_mechanism_purview_qfolds3D(r,relation,show_edges,node_labels,go,fig
                         if mechanism_purview_label not in legend_mechanism_purviews:
                             legend_mechanism_purviews.append(mechanism_purview_label)
                         
-                    return legend_mechanism_purviews
+                    
             
 def plot_compound_purview_qfolds2D(r,relation,show_edges,node_labels,go,fig,two_relations_coords,two_relations_sizes,legend_compound_purviews,relation_color):
                         
@@ -651,7 +652,7 @@ def plot_compound_purview_qfolds2D(r,relation,show_edges,node_labels,go,fig,two_
                         if purview_label not in legend_compound_purviews:
                             legend_compound_purviews.append(purview_label)
                         
-                        return legend_compound_purviews
+                        
 
 def plot_compound_purview_qfolds3D(r,relation,show_edges,node_labels,go,fig,two_relations_coords,two_relations_sizes,legend_compound_purviews,relation_color,x,y,z,i,j,k,three_relations_sizes): 
 
@@ -686,7 +687,7 @@ def plot_compound_purview_qfolds3D(r,relation,show_edges,node_labels,go,fig,two_
 
                         if purview_label not in legend_compound_purviews:
                             legend_compound_purviews.append(purview_label)
-                        return legend_compound_purviews
+                       
 
 def plot_ces(
     subsystem,
@@ -1082,30 +1083,31 @@ def plot_ces(
 
                 # Make node contexts traces and legendgroups
                 if show_node_qfolds:
-                        legend_nodes = plot_node_qfolds2D(r,relation,node_indices,node_labels,go,show_edges,legend_nodes,two_relations_coords,two_relations_sizes,relation_color)
+                    plot_node_qfolds2D(r,relation,node_indices,node_labels,go,show_edges,legend_nodes,two_relations_coords,two_relations_sizes,relation_color)
 
                 # Make nechanism contexts traces and legendgroups
                 if show_mechanism_qfolds:
                     
-                    legend_mechanisms = plot_mechanism_qfolds2D(r,relation,ces,show_edges,node_labels,go,fig,two_relations_coords,two_relations_sizes,legend_mechanisms,relation_color)
+                    plot_mechanism_qfolds2D(r,relation,ces,show_edges,node_labels,go,fig,two_relations_coords,two_relations_sizes,legend_mechanisms,relation_color)
+                    
 
                 # Make compound purview contexts traces and legendgroups
                 if show_compound_purview_qfolds:
                                         
-                    legend_compound_purviews = plot_compound_purview_qfolds2D(r,relation,show_edges,node_labels,go,fig,two_relations_coords,two_relations_sizes,legend_compound_purviews,relation_color)
+                    plot_compound_purview_qfolds2D(r,relation,show_edges,node_labels,go,fig,two_relations_coords,two_relations_sizes,legend_compound_purviews,relation_color)
 
                 # Make relation purview contexts traces and legendgroups
                 
                 #For plotting Relation Purview Q-Folds, which are the relations over a certain purview, regardless of the mechanism.
                 if show_relation_purview_qfolds:
                     
-                    legend_relation_purviews = plot_relation_purview_qfolds2D(r,relation,show_edges,node_labels,go,fig,two_relations_coords,two_relations_sizes,legend_relation_purviews,relation_color)
+                    plot_relation_purview_qfolds2D(r,relation,show_edges,node_labels,go,fig,two_relations_coords,two_relations_sizes,legend_relation_purviews,relation_color)
                     
 
                 # Make cause/effect purview per mechanism contexts traces and legendgroups
                 if show_per_mechanism_purview_qfolds:
                         
-                        legend_mechanism_purviews = plot_per_mechanism_purview_qfolds2D(r,relation,show_edges,node_labels,go,fig,two_relations_coords,two_relations_sizes,legend_mechanism_purviews,relation_color)
+                    plot_per_mechanism_purview_qfolds2D(r,relation,show_edges,node_labels,go,fig,two_relations_coords,two_relations_sizes,legend_mechanism_purviews,relation_color)
                         
                 
                    
@@ -1153,23 +1155,21 @@ def plot_ces(
 
                 if show_node_qfolds:
                     
-                    legend_nodes = plot_node_qfolds3D(r,relation,show_mesh,node_labels,go,fig,legend_nodes,x,y,z,i,j,k,three_relations_sizes)
+                    plot_node_qfolds3D(r,relation,show_mesh,node_labels,go,fig,legend_nodes,x,y,z,i,j,k,three_relations_sizes)
 
                 if show_mechanism_qfolds:
                         
-                    legend_mechanisms = plot_mechanism_qfolds3D(r,relation,ces,show_mesh,node_labels,go,fig,legend_mechanisms,x,y,z,i,j,k,three_relations_sizes)
+                    plot_mechanism_qfolds3D(r,relation,ces,show_mesh,node_labels,go,fig,legend_mechanisms,x,y,z,i,j,k,three_relations_sizes)
 
                 if show_compound_purview_qfolds:
-                                               
-                    legend_compound_purviews = plot_compound_purview_qfolds3D(r,relation,show_edges,node_labels,go,fig,two_relations_coords,two_relations_sizes,legend_compound_purviews,relation_color,x,y,z,i,j,k,three_relations_sizes)
+                    plot_compound_purview_qfolds3D(r,relation,show_edges,node_labels,go,fig,two_relations_coords,two_relations_sizes,legend_compound_purviews,relation_color,x,y,z,i,j,k,three_relations_sizes)
 
                 if show_relation_purview_qfolds:
-                    
-                    legend_relation_purviews= plot_relation_purview_qfolds3D(r,relation,show_edges,node_labels,go,fig,two_relations_coords,two_relations_sizes,legend_relation_purviews,relation_color,x,y,z,i,j,k,three_relations_sizes)
+                    plot_relation_purview_qfolds3D(r,relation,show_edges,node_labels,go,fig,two_relations_coords,two_relations_sizes,legend_relation_purviews,relation_color,x,y,z,i,j,k,three_relations_sizes)
             
 
                 if show_per_mechanism_purview_qfolds:
-                    legend_mechanism_purviews=plot_per_mechanism_purview_qfolds3D(r,relation,show_edges,node_labels,go,fig,two_relations_coords,two_relations_sizes,legend_mechanism_purviews,relation_color,x,y,z,i,j,k,three_relations_sizes)
+                    plot_per_mechanism_purview_qfolds3D(r,relation,show_edges,node_labels,go,fig,two_relations_coords,two_relations_sizes,legend_mechanism_purviews,relation_color,x,y,z,i,j,k,three_relations_sizes)
 
                                             
                 triangle_three_relation_trace = go.Mesh3d(
@@ -1287,4 +1287,7 @@ def plot_ces(
 
     if save_plot_to_html:
         plotly.io.write_html(fig, f"{network_name}_CES.html")
+
+    
     return fig
+
