@@ -852,6 +852,7 @@ def plot_ces(
     purview_labels_size=12,
     purview_state_labels_size=10,
     show_mechanism_labels="legendonly",
+    show_links="legendonly",
     show_mechanism_state_labels="legendonly",
     show_purview_labels="legendonly",
     show_purview_state_labels="legendonly",
@@ -860,7 +861,7 @@ def plot_ces(
     show_edges="legendonly",
     show_mesh="legendonly",
     show_node_qfolds=False,
-    show_mechanism_qfolds="legendonly",
+    show_mechanism_qfolds=False,
     show_compound_purview_qfolds=False,
     show_relation_purview_qfolds=False,
     show_per_mechanism_purview_qfolds=False,
@@ -1166,7 +1167,7 @@ def plot_ces(
 
     for i, distinction in enumerate(separated_ces):
         link_trace = go.Scatter3d(
-            visible=show_vertices_mechanisms,
+            visible=show_links,
             legendgroup="Links",
             showlegend=True if i == 1 else False,
             x=coords_links[0][i],
@@ -1570,4 +1571,6 @@ def plot_ces(
 
     if save_plot_to_html:
         plotly.io.write_html(fig, f"{network_name}_CES.html")
+
     return fig
+
