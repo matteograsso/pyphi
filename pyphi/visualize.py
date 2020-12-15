@@ -24,6 +24,7 @@ from pyphi.utils import powerset
 
 import tkinter as tk
 
+test = 1+2
 
 def get_screen_size():
     havedisplay = "DISPLAY" in os.environ
