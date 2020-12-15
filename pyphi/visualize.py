@@ -943,7 +943,7 @@ def plot_ces(
     node_labels = subsystem.node_labels
     node_indices = subsystem.node_indices
 
-    # Get mechanism and purview labels
+    # Get mechanism and purview labels (Quickly!)
     mechanism_labels = list(map(label_mechanism, ces))
     mechanism_state_labels = [
         label_mechanism_state(subsystem, distinction) for distinction in ces
