@@ -24,7 +24,8 @@ from pyphi.utils import powerset
 
 import tkinter as tk
 
-test = 1+2
+test = 1 + 2
+
 
 def get_screen_size():
     havedisplay = "DISPLAY" in os.environ
@@ -920,10 +921,6 @@ def plot_ces(
         # Add a small offset to effects to separate them from causes
         coords[1::2] += cause_effect_offset
 
-    if save_coords:
-        with open("coords.pkl", "wb") as f:
-            pickle.dump(coords, f)
-
     # Purviews
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # Extract vertex indices for plotly
@@ -935,6 +932,12 @@ def plot_ces(
         z = np.array([len(c.mechanism) for c in separated_ces])
     else:
         z = coords[:, 2]
+
+    coords = np.stack((x, y, z), axis=-1)
+
+    if save_coords:
+        with open("coords.pkl", "wb") as f:
+            pickle.dump(coords, f)
 
     # This separates z-coordinates of cause and effect purviews
     causes_z, effects_z = separate_cause_and_effect_purviews_for(z)
