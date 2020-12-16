@@ -173,6 +173,13 @@ def hovertext_relation(relation):
     return f"<br>={len(relata)}-Relation=<br>" + relata_info + relation_info
 
 
+def grounded_position(mechanism_ixs,element_positions,jitter=0.0,x_offset=0.0,y_offset=0.0,z_offset=0.0):
+    x_pos = np.mean([element_positions[x][0] for x in mechanism_ixs])+np.random.random()*jitter+x_offset
+    y_pos = np.mean([element_positions[y][1] for y in mechanism_ixs])+np.random.random()*jitter+y_offset
+    z_pos = len(mechanism_ixs)+np.random.random()*jitter+z_offset
+    return [x_pos,y_pos,z_pos]
+
+
 def normalize_sizes(min_size, max_size, elements):
     phis = np.array([element.phi for element in elements])
     min_phi = phis.min()
@@ -880,6 +887,9 @@ def plot_ces(
     link_width=1.5,
     colorcode_2_relations=True,
     left_margin=get_screen_size()[0] / 10,
+    grounded=False,
+    element_positions=None,
+    jitter=0.0,
 ):
 
     # Select only relations <= max_order
@@ -969,13 +979,55 @@ def plot_ces(
         vertices_hovertext
     )
 
+    # setting element positions if not already given
+    if grounded and element_positions==None:
+        # creating random eement positions
+        n_elements = len(subsystem)
+        element_positions = np.random.random((n,2))*n
+    elif grounded:
+        # checking that position matrix is correct size
+        if not len(element_positions) == n and len(element_positions[0])==2:
+            print('Bad element position matrix size. Randomizing')
+            element_positions = np.random.random((n,2))*n
+        
+        # getting mechanism and purview indices
+        mechanisms = ces.mechanisms
+        cause_purviews = [c.cause_purview for c in ces.concepts]
+        effect_purviews = [c.effect_purview for c in ces.concepts]
+
+
     # Make mechanism labels
-    xm, ym, zm = (
-        [c + cause_effect_offset[0] / 2 for c in x[::2]],
-        y[::2],
-        [z + 0.1 for z in z[::2]],
-        # [n + (vertex_size_range[1] / 10 ** 3) for n in z[::2]],
-    )
+    if grounded:
+        # mechanism positions
+        pos = [
+            grounded_position(m,element_positions,jitter=jitter,z_offset=0.1) 
+            for m in mechanisms]
+        xm = [p[0] for p in pos]
+        ym = [p[1] for p in pos]
+        zm = [p[2] for p in pos]
+        
+        # cause positions
+        pos = [
+            grounded_position(m,element_positions,jitter=jitter,x_offset=-0.1) 
+            for m in cause_purviews]
+        x_cause = [p[0] for p in pos]
+        y_cause = [p[1] for p in pos]
+        z_cause = [p[2] for p in pos]
+        
+        # effect positions
+        pos = [
+            grounded_position(m,element_positions,jitter=jitter,x_offset=0.1) 
+            for m in effect_purviews]
+        x_effect = [p[0] for p in pos]
+        y_effect = [p[1] for p in pos]
+        z_effect = [p[2] for p in pos]
+    else:
+        xm, ym, zm = (
+            [c + cause_effect_offset[0] / 2 for c in x[::2]],
+            y[::2],
+            [z + 0.1 for z in z[::2]],
+            # [n + (vertex_size_range[1] / 10 ** 3) for n in z[::2]],
+        )
     labels_mechanisms_trace = go.Scatter3d(
         visible=show_mechanism_labels,
         x=xm,
