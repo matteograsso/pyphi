@@ -21,6 +21,7 @@ import networkx as nx
 from networkx.drawing.nx_agraph import graphviz_layout, to_agraph
 from pyphi import relations as rel
 from pyphi.utils import powerset
+from pyphi import direction
 
 import tkinter as tk
 
@@ -1592,7 +1593,7 @@ def grounded_position(mechanism_ixs,element_positions,jitter=0.0,x_offset=0.0,y_
     from scipy.special import comb
     
     N = len(element_positions)
-    c = np.mean(e_pos,axis=0)
+    c = np.mean(element_positions,axis=0)
     n = len(mechanism_ixs)
     factor = comb(N,n-1)*expansion
     
@@ -1696,13 +1697,12 @@ def plot_ces_on_being(
         # Add a small offset to effects to separate them from causes
         coords[1::2] += cause_effect_offset
     
-    elif coords is None and grounded and mezzanine:
-        params = [(c.purview,-1) if c.direction == pyphi.direction.Direction.CAUSE else (c.purview,1) for c in separated_ces]
-        coords = np.array([grounded_position(p[0],element_positions,jitter=jitter,x_offset=p[1]*0.1,z_offset=len(subsystem)+1,expansion=expansion) for p in params])
-    
     elif coords is None and grounded:
-        params = [(c.purview,-1) if c.direction == pyphi.direction.Direction.CAUSE else (c.purview,1) for c in separated_ces]
-        coords = np.array([grounded_position(p[0],element_positions,jitter=jitter,x_offset=p[1]*0.1,expansion=expansion) for p in params])
+        params = [(c.purview,-1) if c.direction == direction.Direction.CAUSE else (c.purview,1) for c in separated_ces]
+        coords = np.array([grounded_position(p[0],element_positions,
+                            jitter=jitter,x_offset=p[1]*0.1,
+                            expansion=expansion,spacing=spacing) 
+                            for p in params])
 
     # Purviews
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1753,11 +1753,21 @@ def plot_ces_on_being(
     )
 
     # Make mechanism labels
-    if grounded:
+    if grounded and not mezzanine:
         
         # mechanism positions
         pos = [
-            grounded_position(m.mechanism,element_positions,jitter=0,z_offset=0.1,expansion=expansion) 
+            grounded_position(m.mechanism,element_positions,
+            jitter=0,z_offset=0.1,expansion=expansion,spacing=spacing) 
+            for m in separated_ces[::2]]
+        xm = [p[0] for p in pos]
+        ym = [p[1] for p in pos]
+        zm = [p[2] for p in pos]
+    elif grounded and mezzanine:    
+        # mechanism positions
+        pos = [
+            grounded_position(m.mechanism,element_positions,
+            jitter=0,z_offset=0.1,expansion=expansion,spacing=spacing/5) 
             for m in separated_ces[::2]]
         xm = [p[0] for p in pos]
         ym = [p[1] for p in pos]
