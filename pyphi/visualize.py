@@ -174,11 +174,26 @@ def hovertext_relation(relation):
     return f"<br>={len(relata)}-Relation=<br>" + relata_info + relation_info
 
 
-def grounded_position(mechanism_ixs,element_positions,jitter=0.0,x_offset=0.0,y_offset=0.0,z_offset=0.0):
-    x_pos = np.mean([element_positions[x][0] for x in mechanism_ixs])+np.random.random()*jitter+x_offset
-    y_pos = np.mean([element_positions[y][1] for y in mechanism_ixs])+np.random.random()*jitter+y_offset
-    z_pos = len(mechanism_ixs)+np.random.random()*jitter+z_offset
-    return [x_pos,y_pos,z_pos]
+def grounded_position(
+    mechanism_ixs,
+    element_positions,
+    jitter=0.0,
+    x_offset=0.0,
+    y_offset=0.0,
+    z_offset=0.0,
+):
+    x_pos = (
+        np.mean([element_positions[x][0] for x in mechanism_ixs])
+        + np.random.random() * jitter
+        + x_offset
+    )
+    y_pos = (
+        np.mean([element_positions[y][1] for y in mechanism_ixs])
+        + np.random.random() * jitter
+        + y_offset
+    )
+    z_pos = len(mechanism_ixs) + np.random.random() * jitter + z_offset
+    return [x_pos, y_pos, z_pos]
 
 
 def normalize_sizes(min_size, max_size, elements):
@@ -1588,30 +1603,61 @@ def plot_ces(
     return fig
 
 
-def grounded_position(mechanism_ixs,element_positions,jitter=0.0,x_offset=0.0,y_offset=0.0,z_offset=0.0,spacing=1,expansion=1):
-    
+def grounded_position(
+    mechanism_ixs,
+    element_positions,
+    jitter=0.0,
+    x_offset=0.0,
+    y_offset=0.0,
+    z_offset=0.0,
+    spacing=1,
+    expansion=1,
+    x=False,
+    y=False,
+    z=False,
+):
+
     from scipy.special import comb
-    
+
     N = len(element_positions)
-    c = np.mean(element_positions,axis=0)
+    c = np.mean(element_positions, axis=0)
     n = len(mechanism_ixs)
-    factor = comb(N,n-1)*expansion
-    
-    x_pos = np.mean([element_positions[x,0] for x in mechanism_ixs])+(np.random.random()-1/2)*jitter+x_offset
-    y_pos = np.mean([element_positions[y,1] for y in mechanism_ixs])+(np.random.random()-1/2)*jitter+y_offset
-    z_pos = n*spacing+(np.random.random()-1/2)*jitter+z_offset
-    
-    return [x_pos+(x_pos-c[0])*factor,y_pos+(y_pos-c[1])*factor,z_pos]
+    factor = comb(N, n - 1) * expansion
+
+    if not x:
+        x_pos = (
+            np.mean([element_positions[x, 0] for x in mechanism_ixs])
+            + (np.random.random() - 1 / 2) * jitter
+            + x_offset
+        )
+    else:
+        x_pos = x
+
+    if not y:
+        y_pos = (
+            np.mean([element_positions[y, 1] for y in mechanism_ixs])
+            + (np.random.random() - 1 / 2) * jitter
+            + y_offset
+        )
+    else:
+        y_pos = y
+
+    if not z:
+        z_pos = n * spacing + (np.random.random() - 1 / 2) * jitter + z_offset
+    else:
+        z_pos = z
+
+    return [x_pos + (x_pos - c[0]) * factor, y_pos + (y_pos - c[1]) * factor, z_pos]
 
 
 def plot_ces_on_being(
     subsystem,
     ces,
     relations,
-    coords=None,
     network=None,
     max_order=3,
-    cause_effect_offset=(0.3, 0, 0),
+    purview_x_offset=0.1,
+    mechanism_z_offset=0.1,
     vertex_size_range=(10, 40),
     edge_size_range=(0.5, 4),
     surface_size_range=(0.005, 0.1),
@@ -1622,15 +1668,15 @@ def plot_ces_on_being(
     states_z_offset=0.15,
     purview_labels_size=12,
     purview_state_labels_size=10,
-    show_mechanism_labels="legendonly",
-    show_links="legendonly",
+    show_mechanism_labels=True,
+    show_links=True,
     show_mechanism_state_labels="legendonly",
-    show_purview_labels="legendonly",
+    show_purview_labels=True,
     show_purview_state_labels="legendonly",
     show_vertices_mechanisms=True,
     show_vertices_purviews=True,
-    show_edges="legendonly",
-    show_mesh="legendonly",
+    show_edges=True,
+    show_mesh=True,
     show_node_qfolds=False,
     show_mechanism_qfolds=False,
     show_compound_purview_qfolds=False,
@@ -1638,23 +1684,27 @@ def plot_ces_on_being(
     show_per_mechanism_purview_qfolds=False,
     show_grid=False,
     network_name="",
-    eye_coordinates=(0.3, 0.3, 0.3),
+    eye_coordinates=(1, 1, 1),
     hovermode="x",
     digraph_filename="digraph.png",
     digraph_layout="dot",
     save_plot_to_html=True,
     show_causal_model=False,
-    order_on_z_axis=True,
+    order_on_z_axis=False,
     save_coords=False,
     link_width=1.5,
     colorcode_2_relations=True,
     left_margin=get_screen_size()[0] / 10,
-    grounded=False,
     element_positions=None,
     jitter=0.0,
     expansion=1,
     spacing=1,
-    mezzanine=False
+    mezzanine=False,
+    mezzanine_z_offset=None,
+    mezzanine_spacing=None,
+    mezzanine_expansion=None,
+    purview_at_mechanism=False,
+    purview_aligned_with_mechanism=False,
 ):
 
     # Select only relations <= max_order
@@ -1668,7 +1718,7 @@ def plot_ces_on_being(
 
     # Dimensionality reduction
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    #if not grounded:
+    # if not grounded:
     # Create the features for each cause/effect based on their relations
     features = feature_matrix(separated_ces, relations)
 
@@ -1679,30 +1729,99 @@ def plot_ces_on_being(
     # Collapse rows of cause/effect belonging to the same distinction
     # NOTE: This depends on the implementation of `separate_ces`; causes and
     #       effects are assumed to be adjacent in the returned list
-    umap_features = features[0::2] + features[1::2]
-    if coords is None and not grounded:
-        if order_on_z_axis:
-            distinction_coords = get_coords(umap_features, n_components=2)
-            cause_effect_offset = cause_effect_offset[:2]
 
-        else:
-            distinction_coords = get_coords(umap_features)
-        # Duplicate causes and effects so they can be plotted separately
-        coords = np.empty(
-            (distinction_coords.shape[0] * 2, distinction_coords.shape[1]),
-            dtype=distinction_coords.dtype,
+    # find positions of the mechanisms (if grounded)
+    if mezzanine_z_offset == None:
+        mezzanine_z_offset = spacing
+
+    if mezzanine_spacing == None:
+        mezzanine_spacing = spacing / len(subsystem)
+
+    if mezzanine_expansion == None:
+        mezzanine_expansion = expansion * 0.5
+
+    # mechanism positions
+    pos = [
+        grounded_position(
+            m.mechanism,
+            element_positions,
+            jitter=0,
+            z_offset=-mezzanine_z_offset if mezzanine else mechanism_z_offset,
+            expansion=mezzanine_expansion if mezzanine else expansion,
+            spacing=mezzanine_spacing if mezzanine else spacing,
         )
-        coords[0::2] = distinction_coords
-        coords[1::2] = distinction_coords
-        # Add a small offset to effects to separate them from causes
-        coords[1::2] += cause_effect_offset
-    
-    elif coords is None and grounded:
-        params = [(c.purview,-1) if c.direction == direction.Direction.CAUSE else (c.purview,1) for c in separated_ces]
-        coords = np.array([grounded_position(p[0],element_positions,
-                            jitter=jitter,x_offset=p[1]*0.1,
-                            expansion=expansion,spacing=spacing) 
-                            for p in params])
+        for m in separated_ces[::2]
+    ]
+    xm = [p[0] for p in pos]
+    ym = [p[1] for p in pos]
+    zm = [p[2] for p in pos]
+
+    # get purview positions
+    if mezzanine:
+        params = [
+            (c.purview, -1)
+            if c.direction == direction.Direction.CAUSE
+            else (c.purview, 1)
+            for c in separated_ces
+        ]
+
+        coords = np.array(
+            [
+                grounded_position(
+                    p[0],
+                    element_positions,
+                    x_offset=p[1] * purview_x_offset,
+                    jitter=jitter,
+                    expansion=expansion,
+                    spacing=spacing,
+                )
+                for p in params
+            ]
+        )
+    # DANGER DO NOT USE THIS FUNCTION:
+    elif purview_aligned_with_mechanism:
+        params = [
+            (c.purview, -1)
+            if c.direction == direction.Direction.CAUSE
+            else (c.purview, 1)
+            for c in separated_ces
+        ]
+
+        coords = np.array(
+            [
+                grounded_position(
+                    p[0],
+                    element_positions,
+                    jitter=jitter,
+                    expansion=expansion,
+                    spacing=spacing,
+                    x=xm[int(i / 2)] + p[1] * purview_x_offset,
+                    y=ym[int(i / 2)],
+                )
+                for p, i in zip(params, range(len(params)))
+            ]
+        )
+
+    else:
+        params = [
+            (c.purview, -1)
+            if c.direction == direction.Direction.CAUSE
+            else (c.purview, 1)
+            for c in separated_ces
+        ]
+        coords = np.array(
+            [
+                grounded_position(
+                    p[0],
+                    element_positions,
+                    jitter=jitter,
+                    x_offset=p[1] * purview_x_offset,
+                    expansion=expansion,
+                    spacing=spacing,
+                )
+                for p in params
+            ]
+        )
 
     # Purviews
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1753,33 +1872,6 @@ def plot_ces_on_being(
     )
 
     # Make mechanism labels
-    if grounded and not mezzanine:
-        
-        # mechanism positions
-        pos = [
-            grounded_position(m.mechanism,element_positions,
-            jitter=0,z_offset=0.1,expansion=expansion,spacing=spacing) 
-            for m in separated_ces[::2]]
-        xm = [p[0] for p in pos]
-        ym = [p[1] for p in pos]
-        zm = [p[2] for p in pos]
-    elif grounded and mezzanine:    
-        # mechanism positions
-        pos = [
-            grounded_position(m.mechanism,element_positions,
-            jitter=0,z_offset=0.1,expansion=expansion,spacing=spacing/5) 
-            for m in separated_ces[::2]]
-        xm = [p[0] for p in pos]
-        ym = [p[1] for p in pos]
-        zm = [p[2] for p in pos]
-        
-    else:
-        xm, ym, zm = (
-            [c + cause_effect_offset[0] / 2 for c in x[::2]],
-            y[::2],
-            [z + 0.1 for z in z[::2]],
-            # [n + (vertex_size_range[1] / 10 ** 3) for n in z[::2]],
-        )
     labels_mechanisms_trace = go.Scatter3d(
         visible=show_mechanism_labels,
         x=xm,
@@ -2289,7 +2381,10 @@ def plot_ces_on_being(
 
         # Create figure
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    axes_range = [(min(d) - 1, max(d) + 1) for d in (np.append(x,xm), np.append(y,ym), np.append(z,zm))]
+    axes_range = [
+        (min(d) - 1, max(d) + 1)
+        for d in (np.append(x, xm), np.append(y, ym), np.append(z, zm))
+    ]
 
     axes = [
         dict(
