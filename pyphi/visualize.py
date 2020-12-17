@@ -887,9 +887,6 @@ def plot_ces(
     link_width=1.5,
     colorcode_2_relations=True,
     left_margin=get_screen_size()[0] / 10,
-    grounded=False,
-    element_positions=None,
-    jitter=0.0,
 ):
 
     # Select only relations <= max_order
@@ -979,48 +976,793 @@ def plot_ces(
         vertices_hovertext
     )
 
-    # setting element positions if not already given
-    if grounded and element_positions==None:
-        # creating random eement positions
-        n_elements = len(subsystem)
-        element_positions = np.random.random((n,2))*n
-    elif grounded:
-        # checking that position matrix is correct size
-        if not len(element_positions) == n and len(element_positions[0])==2:
-            print('Bad element position matrix size. Randomizing')
-            element_positions = np.random.random((n,2))*n
-        
-        # getting mechanism and purview indices
-        mechanisms = ces.mechanisms
-        cause_purviews = [c.cause_purview for c in ces.concepts]
-        effect_purviews = [c.effect_purview for c in ces.concepts]
+    # Make mechanism labels
+    xm, ym, zm = (
+        [c + cause_effect_offset[0] / 2 for c in x[::2]],
+        y[::2],
+        [z + 0.1 for z in z[::2]],
+        # [n + (vertex_size_range[1] / 10 ** 3) for n in z[::2]],
+    )
 
+    labels_mechanisms_trace = go.Scatter3d(
+        visible=show_mechanism_labels,
+        x=xm,
+        y=ym,
+        z=[n + (vertex_size_range[1] / 10 ** 3 + labels_z_offset) for n in zm],
+        mode="text",
+        text=mechanism_labels,
+        name="Mechanism Labels",
+        showlegend=True,
+        textfont=dict(size=mechanism_labels_size, color="black"),
+        hoverinfo="text",
+        hovertext=mechanism_hovertext,
+        hoverlabel=dict(bgcolor="black", font_color="white"),
+    )
+    fig.add_trace(labels_mechanisms_trace)
+
+    # Make mechanism state labels trace
+    labels_mechanisms_state_trace = go.Scatter3d(
+        visible=show_mechanism_state_labels,
+        x=xm,
+        y=ym,
+        z=[
+            n + (vertex_size_range[1] / 10 ** 3 + labels_z_offset + states_z_offset)
+            for n in zm
+        ],
+        mode="text",
+        text=mechanism_state_labels,
+        name="Mechanism State Labels",
+        showlegend=True,
+        textfont=dict(size=mechanism_state_labels_size, color="black"),
+        hoverinfo="text",
+        hovertext=mechanism_hovertext,
+        hoverlabel=dict(bgcolor="black", font_color="white"),
+    )
+    fig.add_trace(labels_mechanisms_state_trace)
+
+    # Compute purview and mechanism marker sizes
+    purview_sizes = normalize_sizes(
+        vertex_size_range[0], vertex_size_range[1], separated_ces
+    )
+
+    cause_purview_sizes, effect_purview_sizes = separate_cause_and_effect_purviews_for(
+        purview_sizes
+    )
+
+    mechanism_sizes = [min(phis) for phis in chunk_list(purview_sizes, 2)]
+    # Make mechanisms trace
+    vertices_mechanisms_trace = go.Scatter3d(
+        visible=show_vertices_mechanisms,
+        x=xm,
+        y=ym,
+        z=zm,
+        mode="markers",
+        name="Mechanisms",
+        text=mechanism_labels,
+        showlegend=True,
+        marker=dict(size=mechanism_sizes, color="black"),
+        hoverinfo="text",
+        hovertext=mechanism_hovertext,
+        hoverlabel=dict(bgcolor="black", font_color="white"),
+    )
+    fig.add_trace(vertices_mechanisms_trace)
+
+    # Make cause purview labels trace
+    labels_cause_purviews_trace = go.Scatter3d(
+        visible=show_purview_labels,
+        x=causes_x,
+        y=causes_y,
+        z=[n + (vertex_size_range[1] / 10 ** 3 + labels_z_offset) for n in causes_z],
+        mode="text",
+        text=cause_purview_labels,
+        name="Cause Purview Labels",
+        showlegend=True,
+        textfont=dict(size=purview_labels_size, color="red"),
+        hoverinfo="text",
+        hovertext=causes_hovertext,
+        hoverlabel=dict(bgcolor="red"),
+    )
+    fig.add_trace(labels_cause_purviews_trace)
+
+    # Make effect purview labels trace
+    labels_effect_purviews_trace = go.Scatter3d(
+        visible=show_purview_labels,
+        x=effects_x,
+        y=effects_y,
+        z=[n + (vertex_size_range[1] / 10 ** 3 + labels_z_offset) for n in effects_z],
+        mode="text",
+        text=effect_purview_labels,
+        name="Effect Purview Labels",
+        showlegend=True,
+        textfont=dict(size=purview_labels_size, color="green"),
+        hoverinfo="text",
+        hovertext=causes_hovertext,
+        hoverlabel=dict(bgcolor="green"),
+    )
+    fig.add_trace(labels_effect_purviews_trace)
+
+    # Make cause purviews state labels trace
+    labels_cause_purviews_state_trace = go.Scatter3d(
+        visible=show_purview_state_labels,
+        x=causes_x,
+        y=causes_y,
+        z=[
+            n + (vertex_size_range[1] / 10 ** 3 + labels_z_offset + states_z_offset)
+            for n in causes_z
+        ],
+        mode="text",
+        text=cause_purview_state_labels,
+        name="Cause Purview State Labels",
+        showlegend=True,
+        textfont=dict(size=purview_state_labels_size, color="red"),
+        hoverinfo="text",
+        hovertext=causes_hovertext,
+        hoverlabel=dict(bgcolor="red"),
+    )
+    fig.add_trace(labels_cause_purviews_state_trace)
+
+    # Make effect purviews state labels trace
+    labels_effect_purviews_state_trace = go.Scatter3d(
+        visible=show_purview_state_labels,
+        x=effects_x,
+        y=effects_y,
+        z=[
+            n + (vertex_size_range[1] / 10 ** 3 + labels_z_offset + states_z_offset)
+            for n in effects_z
+        ],
+        mode="text",
+        text=effect_purview_state_labels,
+        name="Effect Purview State Labels",
+        showlegend=True,
+        textfont=dict(size=purview_state_labels_size, color="green"),
+        hoverinfo="text",
+        hovertext=effects_hovertext,
+        hoverlabel=dict(bgcolor="green"),
+    )
+    fig.add_trace(labels_effect_purviews_state_trace)
+
+    # Separating purview traces
+
+    purview_phis = [purview.phi for purview in separated_ces]
+    cause_purview_phis, effect_purview_phis = separate_cause_and_effect_purviews_for(
+        purview_phis
+    )
+
+    # direction_labels = list(flatten([["Cause", "Effect"] for c in ces]))
+    vertices_cause_purviews_trace = go.Scatter3d(
+        visible=show_vertices_purviews,
+        x=causes_x,
+        y=causes_y,
+        z=causes_z,
+        mode="markers",
+        name="Cause Purviews",
+        text=purview_labels,
+        showlegend=True,
+        marker=dict(size=cause_purview_sizes, color="red"),
+        hoverinfo="text",
+        hovertext=causes_hovertext,
+        hoverlabel=dict(bgcolor="red"),
+    )
+    fig.add_trace(vertices_cause_purviews_trace)
+
+    vertices_effect_purviews_trace = go.Scatter3d(
+        visible=show_vertices_purviews,
+        x=effects_x,
+        y=effects_y,
+        z=effects_z,
+        mode="markers",
+        name="Effect Purviews",
+        text=purview_labels,
+        showlegend=True,
+        marker=dict(size=effect_purview_sizes, color="green"),
+        hoverinfo="text",
+        hovertext=effects_hovertext,
+        hoverlabel=dict(bgcolor="green"),
+    )
+    fig.add_trace(vertices_effect_purviews_trace)
+
+    # Initialize lists for legend
+    legend_nodes = []
+    legend_mechanisms = []
+    legend_compound_purviews = []
+    legend_relation_purviews = []
+    legend_mechanism_purviews = []
+    legend_intersection = []
+
+    intersectionCount = 0  # A flag and a counter for the times there is a check for intersection and it is found.
+    # Plot distinction links (edge connecting cause, mechanism, effect vertices)
+    coords_links = (
+        list(zip(x, flatten(list(zip(xm, xm))))),
+        list(zip(y, flatten(list(zip(ym, ym))))),
+        list(zip(z, flatten(list(zip(zm, zm))))),
+    )
+
+    for i, distinction in enumerate(separated_ces):
+        link_trace = go.Scatter3d(
+            visible=show_links,
+            legendgroup="Links",
+            showlegend=True if i == 1 else False,
+            x=coords_links[0][i],
+            y=coords_links[1][i],
+            z=coords_links[2][i],
+            mode="lines",
+            name="Links",
+            line_width=link_width,
+            line_color="brown",
+            hoverinfo="skip",
+            # hovertext=hovertext_relation(relation),
+        )
+
+        fig.add_trace(link_trace)
+
+    # 2-relations
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    if show_edges:
+        # Get edges from all relations
+        edges = list(
+            flatten(
+                relation_vertex_indices(features, j)
+                for j in range(features.shape[1])
+                if features[:, j].sum() == 2
+            )
+        )
+        if edges:
+            # Convert to DataFrame
+            edges = pd.DataFrame(
+                dict(
+                    x=x[edges],
+                    y=y[edges],
+                    z=z[edges],
+                    line_group=flatten(
+                        zip(range(len(edges) // 2), range(len(edges) // 2))
+                    ),
+                )
+            )
+
+            # Plot edges separately:
+            two_relations = list(filter(lambda r: len(r.relata) == 2, relations))
+
+            two_relations_sizes = normalize_sizes(
+                edge_size_range[0], edge_size_range[1], two_relations
+            )
+
+            two_relations_coords = [
+                list(chunk_list(list(edges["x"]), 2)),
+                list(chunk_list(list(edges["y"]), 2)),
+                list(chunk_list(list(edges["z"]), 2)),
+            ]
+
+            for r, relation in tqdm(
+                enumerate(two_relations),
+                desc="Computing edges",
+                total=len(two_relations),
+            ):
+                relation_nodes = list(flatten(relation.mechanisms))
+                relation_color = get_edge_color(relation, colorcode_2_relations)
+
+                # Make node contexts traces and legendgroups
+                if show_node_qfolds:
+                    legend_nodes = plot_node_qfolds2D(
+                        r,
+                        relation,
+                        node_indices,
+                        node_labels,
+                        go,
+                        show_edges,
+                        legend_nodes,
+                        two_relations_coords,
+                        two_relations_sizes,
+                        relation_color,
+                    )
+
+                # Make nechanism contexts traces and legendgroups
+                if show_mechanism_qfolds:
+
+                    legend_mechanisms = plot_mechanism_qfolds2D(
+                        r,
+                        relation,
+                        ces,
+                        show_edges,
+                        node_labels,
+                        go,
+                        fig,
+                        two_relations_coords,
+                        two_relations_sizes,
+                        legend_mechanisms,
+                        relation_color,
+                    )
+
+                # Make compound purview contexts traces and legendgroups
+                if show_compound_purview_qfolds:
+
+                    legend_compound_purviews = plot_compound_purview_qfolds2D(
+                        r,
+                        relation,
+                        show_edges,
+                        node_labels,
+                        go,
+                        fig,
+                        two_relations_coords,
+                        two_relations_sizes,
+                        legend_compound_purviews,
+                        relation_color,
+                    )
+
+                # Make relation purview contexts traces and legendgroups
+
+                # For plotting Relation Purview Q-Folds, which are the relations over a certain purview, regardless of the mechanism.
+                if show_relation_purview_qfolds:
+
+                    legend_relation_purviews = plot_relation_purview_qfolds2D(
+                        r,
+                        relation,
+                        show_edges,
+                        node_labels,
+                        go,
+                        fig,
+                        two_relations_coords,
+                        two_relations_sizes,
+                        legend_relation_purviews,
+                        relation_color,
+                    )
+
+                # Make cause/effect purview per mechanism contexts traces and legendgroups
+                if show_per_mechanism_purview_qfolds:
+
+                    legend_mechanism_purviews = plot_per_mechanism_purview_qfolds2D(
+                        r,
+                        relation,
+                        show_edges,
+                        node_labels,
+                        go,
+                        fig,
+                        two_relations_coords,
+                        two_relations_sizes,
+                        legend_mechanism_purviews,
+                        relation_color,
+                    )
+
+                # Make all 2-relations traces and legendgroup
+                edge_two_relation_trace = go.Scatter3d(
+                    visible=show_edges,
+                    legendgroup="All 2-Relations",
+                    showlegend=True if r == 0 else False,
+                    x=two_relations_coords[0][r],
+                    y=two_relations_coords[1][r],
+                    z=two_relations_coords[2][r],
+                    mode="lines",
+                    # name=label_relation(relation),
+                    name="All 2-Relations",
+                    line_width=two_relations_sizes[r],
+                    line_color=relation_color,
+                    hoverinfo="text",
+                    hovertext=hovertext_relation(relation),
+                )
+
+                fig.add_trace(edge_two_relation_trace)
+
+    # 3-relations
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # Get triangles from all relations
+    if show_mesh:
+        triangles = [
+            relation_vertex_indices(features, j)
+            for j in range(features.shape[1])
+            if features[:, j].sum() == 3
+        ]
+
+        if triangles:
+            three_relations = list(filter(lambda r: len(r.relata) == 3, relations))
+            three_relations_sizes = normalize_sizes(
+                surface_size_range[0], surface_size_range[1], three_relations
+            )
+            # Extract triangle indices
+            i, j, k = zip(*triangles)
+            for r, triangle in tqdm(
+                enumerate(triangles), desc="Computing triangles", total=len(triangles)
+            ):
+                relation = three_relations[r]
+                relation_nodes = list(flatten(relation.mechanisms))
+
+                if show_node_qfolds:
+
+                    legend_nodes = plot_node_qfolds3D(
+                        r,
+                        relation,
+                        show_mesh,
+                        node_labels,
+                        go,
+                        fig,
+                        legend_nodes,
+                        x,
+                        y,
+                        z,
+                        i,
+                        j,
+                        k,
+                        three_relations_sizes,
+                    )
+
+                if show_mechanism_qfolds:
+
+                    legend_mechanisms = plot_mechanism_qfolds3D(
+                        r,
+                        relation,
+                        ces,
+                        show_mesh,
+                        node_labels,
+                        go,
+                        fig,
+                        legend_mechanisms,
+                        x,
+                        y,
+                        z,
+                        i,
+                        j,
+                        k,
+                        three_relations_sizes,
+                    )
+
+                if show_compound_purview_qfolds:
+
+                    legend_compound_purviews = plot_compound_purview_qfolds3D(
+                        r,
+                        relation,
+                        show_edges,
+                        node_labels,
+                        go,
+                        fig,
+                        two_relations_coords,
+                        two_relations_sizes,
+                        legend_compound_purviews,
+                        relation_color,
+                        x,
+                        y,
+                        z,
+                        i,
+                        j,
+                        k,
+                        three_relations_sizes,
+                    )
+
+                if show_relation_purview_qfolds:
+
+                    legend_relation_purviews = plot_relation_purview_qfolds3D(
+                        r,
+                        relation,
+                        show_edges,
+                        node_labels,
+                        go,
+                        fig,
+                        two_relations_coords,
+                        two_relations_sizes,
+                        legend_relation_purviews,
+                        relation_color,
+                        x,
+                        y,
+                        z,
+                        i,
+                        j,
+                        k,
+                        three_relations_sizes,
+                    )
+
+                if show_per_mechanism_purview_qfolds:
+                    legend_mechanism_purviews = plot_per_mechanism_purview_qfolds3D(
+                        r,
+                        relation,
+                        show_edges,
+                        node_labels,
+                        go,
+                        fig,
+                        two_relations_coords,
+                        two_relations_sizes,
+                        legend_mechanism_purviews,
+                        relation_color,
+                        x,
+                        y,
+                        z,
+                        i,
+                        j,
+                        k,
+                        three_relations_sizes,
+                    )
+
+                triangle_three_relation_trace = go.Mesh3d(
+                    visible=show_mesh,
+                    legendgroup="All 3-Relations",
+                    showlegend=True if r == 0 else False,
+                    # x, y, and z are the coordinates of vertices
+                    x=x,
+                    y=y,
+                    z=z,
+                    # i, j, and k are the vertices of triangles
+                    i=[i[r]],
+                    j=[j[r]],
+                    k=[k[r]],
+                    # Intensity of each vertex, which will be interpolated and color-coded
+                    intensity=np.linspace(0, 1, len(x), endpoint=True),
+                    opacity=three_relations_sizes[r],
+                    colorscale="viridis",
+                    showscale=False,
+                    name="All 3-Relations",
+                    hoverinfo="text",
+                    hovertext=hovertext_relation(relation),
+                )
+                fig.add_trace(triangle_three_relation_trace)
+
+        # Create figure
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    axes_range = [(min(d) - 1, max(d) + 1) for d in (x, y, z)]
+
+    axes = [
+        dict(
+            showbackground=False,
+            showline=False,
+            zeroline=False,
+            showgrid=show_grid,
+            gridcolor="lightgray",
+            showticklabels=False,
+            showspikes=True,
+            autorange=False,
+            range=axes_range[dimension],
+            backgroundcolor="white",
+            title="",
+        )
+        for dimension in range(3)
+    ]
+
+    layout = go.Layout(
+        showlegend=True,
+        scene_xaxis=axes[0],
+        scene_yaxis=axes[1],
+        scene_zaxis=axes[2],
+        scene_camera=dict(
+            eye=dict(x=eye_coordinates[0], y=eye_coordinates[1], z=eye_coordinates[2])
+        ),
+        hovermode=hovermode,
+        title=f"{network_name} Q-STRUCTURE",
+        title_font_size=30,
+        legend=dict(
+            title=dict(
+                text="Trace legend (click trace to show/hide):",
+                font=dict(color="black", size=15),
+            )
+        ),
+        autosize=True,
+        # height=plot_dimentions[0],
+        # width=plot_dimentions[1],
+    )
+
+    # Apply layout
+    fig.layout = layout
+
+    if show_causal_model:
+        # Create system image
+        save_digraph(subsystem, digraph_filename, layout=digraph_layout)
+        encoded_image = base64.b64encode(open(digraph_filename, "rb").read())
+        digraph_coords = (0, 0.75)
+        digraph_size = (0.2, 0.3)
+
+        fig.add_layout_image(
+            dict(
+                name="Causal model",
+                source="data:image/png;base64,{}".format(encoded_image.decode()),
+                #         xref="paper", yref="paper",
+                x=digraph_coords[0],
+                y=digraph_coords[1],
+                sizex=digraph_size[0],
+                sizey=digraph_size[1],
+                xanchor="left",
+                yanchor="top",
+            )
+        )
+
+        draft_template = go.layout.Template()
+        draft_template.layout.annotations = [
+            dict(
+                name="Causal model",
+                text="Causal model",
+                opacity=1,
+                font=dict(color="black", size=20),
+                xref="paper",
+                yref="paper",
+                x=digraph_coords[0],
+                y=digraph_coords[1] + 0.05,
+                xanchor="left",
+                yanchor="bottom",
+                showarrow=False,
+            )
+        ]
+
+        fig.update_layout(
+            margin_l=left_margin,
+            template=draft_template,
+            annotations=[dict(templateitemname="Causal model", visible=True)],
+        )
+
+    if save_plot_to_html:
+        plotly.io.write_html(fig, f"{network_name}_CES.html")
+
+    return fig
+
+
+def grounded_position(mechanism_ixs,element_positions,jitter=0.0,x_offset=0.0,y_offset=0.0,z_offset=0.0,spacing=1,expansion=1):
+    
+    from scipy.special import comb
+    
+    N = len(element_positions)
+    c = np.mean(e_pos,axis=0)
+    n = len(mechanism_ixs)
+    factor = comb(N,n-1)*expansion
+    
+    x_pos = np.mean([element_positions[x,0] for x in mechanism_ixs])+(np.random.random()-1/2)*jitter+x_offset
+    y_pos = np.mean([element_positions[y,1] for y in mechanism_ixs])+(np.random.random()-1/2)*jitter+y_offset
+    z_pos = n*spacing+(np.random.random()-1/2)*jitter+z_offset
+    
+    return [x_pos+(x_pos-c[0])*factor,y_pos+(y_pos-c[1])*factor,z_pos]
+
+
+def plot_ces_on_being(
+    subsystem,
+    ces,
+    relations,
+    coords=None,
+    network=None,
+    max_order=3,
+    cause_effect_offset=(0.3, 0, 0),
+    vertex_size_range=(10, 40),
+    edge_size_range=(0.5, 4),
+    surface_size_range=(0.005, 0.1),
+    plot_dimentions=(800, 1000),
+    mechanism_labels_size=14,
+    mechanism_state_labels_size=12,
+    labels_z_offset=0.15,
+    states_z_offset=0.15,
+    purview_labels_size=12,
+    purview_state_labels_size=10,
+    show_mechanism_labels="legendonly",
+    show_links="legendonly",
+    show_mechanism_state_labels="legendonly",
+    show_purview_labels="legendonly",
+    show_purview_state_labels="legendonly",
+    show_vertices_mechanisms=True,
+    show_vertices_purviews=True,
+    show_edges="legendonly",
+    show_mesh="legendonly",
+    show_node_qfolds=False,
+    show_mechanism_qfolds=False,
+    show_compound_purview_qfolds=False,
+    show_relation_purview_qfolds=False,
+    show_per_mechanism_purview_qfolds=False,
+    show_grid=False,
+    network_name="",
+    eye_coordinates=(0.3, 0.3, 0.3),
+    hovermode="x",
+    digraph_filename="digraph.png",
+    digraph_layout="dot",
+    save_plot_to_html=True,
+    show_causal_model=False,
+    order_on_z_axis=True,
+    save_coords=False,
+    link_width=1.5,
+    colorcode_2_relations=True,
+    left_margin=get_screen_size()[0] / 10,
+    grounded=False,
+    element_positions=None,
+    jitter=0.0,
+    expansion=1,
+    spacing=1,
+    mezzanine=False
+):
+
+    # Select only relations <= max_order
+    relations = list(filter(lambda r: len(r.relata) <= max_order, relations))
+
+    # Separate CES into causes and effects
+    separated_ces = rel.separate_ces(ces)
+
+    # Initialize figure
+    fig = go.Figure()
+
+    # Dimensionality reduction
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    #if not grounded:
+    # Create the features for each cause/effect based on their relations
+    features = feature_matrix(separated_ces, relations)
+
+    # Now we get one set of coordinates for the CES; these will then be offset to
+    # get coordinates for causes and effects separately, so that causes/effects
+    # are always near each other in the embedding.
+
+    # Collapse rows of cause/effect belonging to the same distinction
+    # NOTE: This depends on the implementation of `separate_ces`; causes and
+    #       effects are assumed to be adjacent in the returned list
+    umap_features = features[0::2] + features[1::2]
+    if coords is None and not grounded:
+        if order_on_z_axis:
+            distinction_coords = get_coords(umap_features, n_components=2)
+            cause_effect_offset = cause_effect_offset[:2]
+
+        else:
+            distinction_coords = get_coords(umap_features)
+        # Duplicate causes and effects so they can be plotted separately
+        coords = np.empty(
+            (distinction_coords.shape[0] * 2, distinction_coords.shape[1]),
+            dtype=distinction_coords.dtype,
+        )
+        coords[0::2] = distinction_coords
+        coords[1::2] = distinction_coords
+        # Add a small offset to effects to separate them from causes
+        coords[1::2] += cause_effect_offset
+    
+    elif coords is None and grounded and mezzanine:
+        params = [(c.purview,-1) if c.direction == pyphi.direction.Direction.CAUSE else (c.purview,1) for c in separated_ces]
+        coords = np.array([grounded_position(p[0],element_positions,jitter=jitter,x_offset=p[1]*0.1,z_offset=len(subsystem)+1,expansion=expansion) for p in params])
+    
+    elif coords is None and grounded:
+        params = [(c.purview,-1) if c.direction == pyphi.direction.Direction.CAUSE else (c.purview,1) for c in separated_ces]
+        coords = np.array([grounded_position(p[0],element_positions,jitter=jitter,x_offset=p[1]*0.1,expansion=expansion) for p in params])
+
+    # Purviews
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # Extract vertex indices for plotly
+    x, y = coords[:, 0], coords[:, 1]
+
+    causes_x, causes_y, effects_x, effects_y = separate_cause_and_effect_for(coords)
+
+    if order_on_z_axis:
+        z = np.array([len(c.mechanism) for c in separated_ces])
+    else:
+        z = coords[:, 2]
+
+    coords = np.stack((x, y, z), axis=-1)
+
+    if save_coords:
+        with open("coords.pkl", "wb") as f:
+            pickle.dump(coords, f)
+
+    # This separates z-coordinates of cause and effect purviews
+    causes_z, effects_z = separate_cause_and_effect_purviews_for(z)
+
+    # Get node labels and indices for future use:
+    node_labels = subsystem.node_labels
+    node_indices = subsystem.node_indices
+
+    # Get mechanism and purview labels (Quickly!)
+    mechanism_labels = list(map(label_mechanism, ces))
+    mechanism_state_labels = [
+        label_mechanism_state(subsystem, distinction) for distinction in ces
+    ]
+    purview_labels = list(map(label_purview, separated_ces))
+    purview_state_labels = list(map(label_purview_state, separated_ces))
+
+    (
+        cause_purview_labels,
+        effect_purview_labels,
+    ) = separate_cause_and_effect_purviews_for(purview_labels)
+    (
+        cause_purview_state_labels,
+        effect_purview_state_labels,
+    ) = separate_cause_and_effect_purviews_for(purview_state_labels)
+
+    mechanism_hovertext = list(map(hovertext_mechanism, ces))
+    vertices_hovertext = list(map(hovertext_purview, separated_ces))
+    causes_hovertext, effects_hovertext = separate_cause_and_effect_purviews_for(
+        vertices_hovertext
+    )
 
     # Make mechanism labels
     if grounded:
+        
         # mechanism positions
         pos = [
-            grounded_position(m,element_positions,jitter=jitter,z_offset=0.1) 
-            for m in mechanisms]
+            grounded_position(m.mechanism,element_positions,jitter=0,z_offset=0.1,expansion=expansion) 
+            for m in separated_ces[::2]]
         xm = [p[0] for p in pos]
         ym = [p[1] for p in pos]
         zm = [p[2] for p in pos]
         
-        # cause positions
-        pos = [
-            grounded_position(m,element_positions,jitter=jitter,x_offset=-0.1) 
-            for m in cause_purviews]
-        x_cause = [p[0] for p in pos]
-        y_cause = [p[1] for p in pos]
-        z_cause = [p[2] for p in pos]
-        
-        # effect positions
-        pos = [
-            grounded_position(m,element_positions,jitter=jitter,x_offset=0.1) 
-            for m in effect_purviews]
-        x_effect = [p[0] for p in pos]
-        y_effect = [p[1] for p in pos]
-        z_effect = [p[2] for p in pos]
     else:
         xm, ym, zm = (
             [c + cause_effect_offset[0] / 2 for c in x[::2]],
@@ -1537,7 +2279,7 @@ def plot_ces(
 
         # Create figure
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    axes_range = [(min(d) - 1, max(d) + 1) for d in (x, y, z)]
+    axes_range = [(min(d) - 1, max(d) + 1) for d in (np.append(x,xm), np.append(y,ym), np.append(z,zm))]
 
     axes = [
         dict(
