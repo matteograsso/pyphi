@@ -1755,6 +1755,7 @@ def plot_ces_epicycles(
     # Initialize figure
     fig = go.Figure()
 
+    # computing epicycles
     N = len(subsystem)
 
     # Things for the new function
@@ -1773,28 +1774,35 @@ def plot_ces_epicycles(
         )
         for k in range(1, N + 1)
     ]
-    epicycle_vertices = np.concatenate([f for f in floors])
+    floor_vertices = np.concatenate([f for f in floors])
+
+    # getting a list of all possible purviews
+    all_purviews = list(powerset(range(N), nonempty=True))
+
+    # find number of times each purview appears
+    vertex_purview = {p:fv for p,fv in zip(all_purviews,floor_vertices) if purviews.count(p)>0} 
 
     # Create epicycles
+    num_purviews = [purviews.count(p) for p in all_purviews if purviews.count(p)>0]
     epicycles = [
         regular_polygon(n, center=(e[0], e[1]), z=e[2], radius=0.2)
-        for e, n in zip(epicycle_vertices, num_purviews)
+        for e, n in zip(floor_vertices, num_purviews)
         if n > 0
     ]
 
-    ### IT BREAKS HERE! WE MUST GET THE RIGHT ORDER FROM THE PURVIEW ###
-    epicycle_coords = np.concatenate([e for e in epicycles])
+    # associating each purview with vertices in a regular polygon around the correct floor vertex
+    purview_positions = [{v:e, 'N':0} for v,e in zip(vertex_purview.keys(),epicycles)]
 
-    '''
-    # find number of times each purview appears
-    num_purviews = [purviews.count(p) for p in powerset(range(N), nonempty=True)]
+    # placing purview coordinates in the correct order 
+    purview_vertex_coordinates = []
+    for p in purviews:
+        for pp in purview_positions:
+            if p in pp.keys():
+                purview_vertex_coordinates.append(pp[p][pp['N']])
+                pp['N']+=1
 
-    # these are the correctly listed purviews
-    purview_index = [list(powerset(range(N), nonempty=True)).index(p) for p in purviews]
-'''
 
-
-    coords = epicycle_coords
+    coords = purview_vertex_coordinates
 
     # Construct mezzanine
     mezzanine = [
