@@ -99,10 +99,15 @@ def relation_vertex_indices(features, j):
     return features[:, j].nonzero()[0]
 
 
-def all_triangles(vertices):
-    """Return all triangles within a set of vertices."""
-    return itertools.combinations(vertices, 3)
+# def all_triangles(vertices):
+#     """Return all triangles within a set of vertices."""
+#     return itertools.combinations(vertices, 3)
 
+def all_triangles(N):
+    combos = itertools.combinations(list(range(N)), 3)
+    return ([i[0] for i in [list(l) for l in combos]],
+            [i[1] for i in [list(l) for l in combos]],
+            [i[2] for i in [list(l) for l in combos]])
 
 def all_edges(vertices):
     """Return all edges within a set of vertices."""
@@ -972,8 +977,8 @@ def plot_ces_epicycles(
     show_purview_state_labels="legendonly",
     show_vertices_mechanisms="legendonly",
     show_vertices_purviews=True,
-    show_edges=True,
-    show_mesh=True,
+    show_edges="legendonly",
+    show_mesh="legendonly",
     show_node_qfolds=False,
     show_mechanism_qfolds=False,
     show_compound_purview_qfolds=False,
@@ -996,9 +1001,12 @@ def plot_ces_epicycles(
     floor_scale=3,
     ground_floor_height=0,
     epicycle_radius=0.2,
-    mezzanine_center=(0, 0),
-    mezzanine_scale=0.2,
-    mezzanine_floor_height=0,
+    base_center=(0, 0),
+    base_scale=0.2,
+    base_floor_height=0,
+    base_opacity=0.1,
+    show_mechanism_base=True,
+    base_intensity=0.5,
 ):
 
     # Select only relations <= max_order
@@ -1059,29 +1067,29 @@ def plot_ces_epicycles(
 
     coords = np.array(purview_vertex_coordinates)
 
-    # Construct mezzanine
-    mezzanine = [
+    # Construct base
+    base = [
         np.array(
             regular_polygon(
                 int(comb(N, k)),
-                center=mezzanine_center,
-                z=k / N + mezzanine_floor_height,
-                scale=mezzanine_scale,
+                center=base_center,
+                z=k / N + base_floor_height,
+                scale=base_scale,
             )
         )
         for k in range(1, N + 1)
     ]
 
-    mezzanine_vertices = np.concatenate([f for f in mezzanine])
+    base_vertices = np.concatenate([f for f in base])
     i = 0
-    mezzanine_coords = []
-    for m,c,i in zip(all_purviews,mezzanine_vertices,range(len(all_purviews))):
+    base_coords = []
+    for m,c,i in zip(all_purviews,base_vertices,range(len(all_purviews))):
         if m in mechanisms:
-            mezzanine_coords.append(list(mezzanine_vertices[i]))
+            base_coords.append(list(base_vertices[i]))
 
-    xm = [p[0] for p in mezzanine_coords]
-    ym = [p[1] for p in mezzanine_coords]
-    zm = [p[2] for p in mezzanine_coords]
+    xm = [p[0] for p in base_coords]
+    ym = [p[1] for p in base_coords]
+    zm = [p[2] for p in base_coords]
 
     # Dimensionality reduction
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1140,7 +1148,7 @@ def plot_ces_epicycles(
         vertices_hovertext
     )
 
-    # Make mechanism labels
+    # Make mechanism labels trace
     labels_mechanisms_trace = go.Scatter3d(
         visible=show_mechanism_labels,
         x=xm,
@@ -1157,6 +1165,25 @@ def plot_ces_epicycles(
         hoverlabel=dict(bgcolor="black", font_color="white"),
     )
     fig.add_trace(labels_mechanisms_trace)
+
+    # Make mechanism base
+    i_base,j_base,k_base = all_triangles(len(xm))
+    mechanism_base_trace = go.Mesh3d(
+        x=xm,
+        y=ym,
+        z=zm,
+        visible=show_mechanism_base,
+        legendgroup="Mechanism base",
+        opacity=base_opacity,
+        colorscale="gray",
+        intensity=[base_intensity]*len(i_base),
+        i=i_base,
+        j=j_base,
+        k=k_base,
+        name='Base',
+        showscale=False,
+    )
+    fig.add_trace(mechanism_base_trace)
 
     # Make mechanism state labels trace
     labels_mechanisms_state_trace = go.Scatter3d(
@@ -1808,10 +1835,10 @@ def plot_ces_epicycles(
 #     jitter=0.0,
 #     floor_scale=1,
 #     floor_spacing=1,
-#     mezzanine=False,
-#     mezzanine_z_offset=None,
-#     mezzanine_floor_spacing=None,
-#     mezzanine_floor_scale=None,
+#     base=False,
+#     base_z_offset=None,
+#     base_floor_spacing=None,
+#     base_floor_scale=None,
 #     purview_in_place=False,
 #     purview_aligned_with_mechanism=False,
 #     restrict_ground_floor=True,
@@ -1841,14 +1868,14 @@ def plot_ces_epicycles(
 #     #       effects are assumed to be adjacent in the returned list
 
 #     # find positions of the mechanisms (if grounded)
-#     if mezzanine_z_offset == None:
-#         mezzanine_z_offset = floor_spacing / 2
+#     if base_z_offset == None:
+#         base_z_offset = floor_spacing / 2
 
-#     if mezzanine_floor_spacing == None:
-#         mezzanine_floor_spacing = mezzanine_z_offset / len(subsystem)
+#     if base_floor_spacing == None:
+#         base_floor_spacing = base_z_offset / len(subsystem)
 
-#     if mezzanine_floor_scale == None:
-#         mezzanine_floor_scale = floor_scale / 2
+#     if base_floor_scale == None:
+#         base_floor_scale = floor_scale / 2
 
 #     # mechanism positions
 #     pos = [
@@ -1856,10 +1883,10 @@ def plot_ces_epicycles(
 #             m.mechanism,
 #             element_positions,
 #             jitter=0,
-#             z_offset=-mezzanine_z_offset if mezzanine else mechanism_z_offset,
-#             floor_scale=mezzanine_floor_scale if mezzanine else floor_scale,
-#             floor_spacing=mezzanine_floor_spacing if mezzanine else floor_spacing,
-#             restrict_ground_floor=False if mezzanine else restrict_ground_floor,
+#             z_offset=-base_z_offset if base else mechanism_z_offset,
+#             floor_scale=base_floor_scale if base else floor_scale,
+#             floor_spacing=base_floor_spacing if base else floor_spacing,
+#             restrict_ground_floor=False if base else restrict_ground_floor,
 #         )
 #         for m in separated_ces[::2]
 #     ]
@@ -1868,7 +1895,7 @@ def plot_ces_epicycles(
 #     zm = [p[2] for p in pos]
 
 #     # get purview positions
-#     if mezzanine:
+#     if base:
 #         params = [
 #             (c.purview, -1)
 #             if c.direction == direction.Direction.CAUSE
