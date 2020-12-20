@@ -1802,7 +1802,7 @@ def plot_ces_epicycles(
                 pp['N']+=1
 
 
-    coords = purview_vertex_coordinates
+    coords = np.array(purview_vertex_coordinates)
 
     # Construct mezzanine
     mezzanine = [
@@ -1818,10 +1818,11 @@ def plot_ces_epicycles(
     ]
 
     mezzanine_vertices = np.concatenate([f for f in mezzanine])
-    num_mechanisms = [
-    mezzanine_coords = np.array(
-        [list(m) for m, n in zip(mezzanine_vertices, num_mechanisms) if n == 1]
-    )
+    i = 0
+    mezzanine_coords = []
+    for m,c,i in zip(all_purviews,mezzanine_vertices,range(len(all_purviews))):
+        if m in mechanisms:
+            mezzanine_coords.append(list(mezzanine_vertices[i]))
 
     xm = [p[0] for p in mezzanine_coords]
     ym = [p[1] for p in mezzanine_coords]
@@ -2440,7 +2441,7 @@ def plot_ces_epicycles(
 
     # Apply layout
     fig.layout = layout
-    from matplotlib._png import read_png
+    #from matplotlib._png import read_png
 
     if show_causal_model:
         # Create system image
