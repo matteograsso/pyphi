@@ -998,7 +998,7 @@ def plot_ces_epicycles(
     floor_center=(0, 0),
     floor_scale=3,
     ground_floor_height=0,
-    epicycle_radius=0.2,
+    epicycle_radius=0.4,
     base_center=(0, 0),
     base_scale=1,
     base_floor_height=2,
