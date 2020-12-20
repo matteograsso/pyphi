@@ -113,18 +113,32 @@ def all_edges(vertices):
     return itertools.combinations(vertices, 2)
 
 
-def make_label(nodes, node_labels=None, bold=False):
-    if node_labels is not None:
-        nodes = node_labels.indices2labels(nodes)
-    return "<b>" + "".join(nodes) + "</b>" if bold else "".join(nodes)
+def make_label(node_indices, node_labels=None, bold=False, state=False):
+
+    if node_labels is None:
+        node_labels = [string.ascii_uppercase[n] for n in node_indices]
+    else:
+        node_labels = node_labels.indices2labels(node_indices)
+
+    if state:
+        # capitalizing labels of mechs that are on
+        for i in range(len(node_labels)):
+            if state[i] == 0:
+                node_labels[i] = node_labels[i].lower()
+            else:
+                node_labels[i] = node_labels[i].upper()
+
+    return "<b>" + "".join(node_labels) + "</b>" if bold else "".join(node_labels)
 
 
-def label_mechanism(mice, bold=True):
-    return make_label(mice.mechanism, node_labels=mice.node_labels, bold=bold)
+def label_mechanism(mice, bold=True, state=False):
+    return make_label(
+        mice.mechanism, node_labels=mice.node_labels, bold=bold, state=state
+    )
 
 
-def label_purview(mice):
-    return make_label(mice.purview, node_labels=mice.node_labels)
+def label_purview(mice, state=False):
+    return make_label(mice.purview, node_labels=mice.node_labels, state=state)
 
 
 def label_state(mice):
@@ -1006,7 +1020,16 @@ def plot_ces_epicycles(
     base_opacity=0.1,
     show_mechanism_base=True,
     base_intensity=0.5,
+    state_as_lettercase=True,
+    mechanism_label_bold=True,
 ):
+
+    if state_as_lettercase:
+        system_state = (
+            [subsystem.state[n] for n in subsystem.node_indices]
+            if state_as_lettercase
+            else False
+        )
 
     # Select only relations <= max_order
     relations = list(filter(lambda r: len(r.relata) <= max_order, relations))
@@ -1130,11 +1153,19 @@ def plot_ces_epicycles(
     node_indices = subsystem.node_indices
 
     # Get mechanism and purview labels (Quickly!)
-    mechanism_labels = list(map(label_mechanism, ces))
+    # mechanism_labels = list(map(label_mechanism, ces))
+    mechanism_labels = [
+        label_mechanism(mice, bold=mechanism_label_bold, state=system_state)
+        for mice in separated_ces[::2]
+    ]
     mechanism_state_labels = [
         label_mechanism_state(subsystem, distinction) for distinction in ces
     ]
-    purview_labels = list(map(label_purview, separated_ces))
+    # purview_labels = list(map(label_purview, separated_ces))
+    purview_labels = [
+        label_mechanism(mice, state=rel.maximal_state(mice)) for mice in separated_ces
+    ]
+
     purview_state_labels = list(map(label_purview_state, separated_ces))
 
     (
