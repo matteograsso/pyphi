@@ -123,7 +123,7 @@ def make_label(node_indices, node_labels=None, bold=False, state=False):
     if state:
         nl = []
         # capitalizing labels of mechs that are on
-        for n,i in zip(node_labels,node_indices):
+        for n, i in zip(node_labels, node_indices):
             if state[i] == 0:
                 nl.append(n.lower())
             else:
@@ -975,8 +975,8 @@ def plot_ces_epicycles(
     purview_x_offset=0.1,
     mechanism_z_offset=0,
     vertex_size_range=(10, 20),
-    edge_size_range=(0.5, 4),
-    surface_size_range=(0.005, 0.1),
+    edge_size_range=(0.5, 2),
+    surface_size_range=(0.005, 0.5),
     plot_dimentions=(800, 1000),
     mechanism_labels_size=14,
     mechanism_state_labels_size=12,
@@ -991,8 +991,8 @@ def plot_ces_epicycles(
     show_purview_state_labels="legendonly",
     show_vertices_mechanisms="legendonly",
     show_vertices_purviews=True,
-    show_edges="legendonly",
-    show_mesh="legendonly",
+    show_edges=True,
+    show_mesh=True,
     show_node_qfolds=False,
     show_mechanism_qfolds=False,
     show_compound_purview_qfolds=False,
@@ -1165,7 +1165,8 @@ def plot_ces_epicycles(
     ]
     # purview_labels = list(map(label_purview, separated_ces))
     purview_labels = [
-        label_purview(mice, state=list(rel.maximal_state(mice)[0])) for mice in separated_ces
+        label_purview(mice, state=list(rel.maximal_state(mice)[0]))
+        for mice in separated_ces
     ]
 
     purview_state_labels = list(map(label_purview_state, separated_ces))
