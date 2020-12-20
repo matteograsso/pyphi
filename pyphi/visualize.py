@@ -1001,8 +1001,8 @@ def plot_ces_epicycles(
     epicycle_radius=0.2,
     base_center=(0, 0),
     base_scale=1,
-    base_floor_height=0,
-    mech_base_floor_height=2,
+    base_floor_height=2,
+    base_z_offset=0,
     base_opacity=0.1,
     show_mechanism_base=True,
     base_intensity=0.5,
@@ -1077,7 +1077,7 @@ def plot_ces_epicycles(
             regular_polygon(
                 int(comb(N, k)),
                 center=base_center,
-                z=((k / N) * mech_base_floor_height) + base_floor_height,
+                z=((k / N) * base_floor_height) + base_z_offset,
                 scale=base_scale,
             )
         )
