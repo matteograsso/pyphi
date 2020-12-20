@@ -121,12 +121,14 @@ def make_label(node_indices, node_labels=None, bold=False, state=False):
         node_labels = node_labels.indices2labels(node_indices)
 
     if state:
+        nl = []
         # capitalizing labels of mechs that are on
-        for i in range(len(node_labels)):
+        for n,i in zip(node_labels,node_indices):
             if state[i] == 0:
-                node_labels[i] = node_labels[i].lower()
+                nl.append(n.lower())
             else:
-                node_labels[i] = node_labels[i].upper()
+                nl.append(n.upper())
+        node_labels = nl
 
     return "<b>" + "".join(node_labels) + "</b>" if bold else "".join(node_labels)
 
@@ -1163,7 +1165,7 @@ def plot_ces_epicycles(
     ]
     # purview_labels = list(map(label_purview, separated_ces))
     purview_labels = [
-        label_mechanism(mice, state=rel.maximal_state(mice)) for mice in separated_ces
+        label_purview(mice, state=list(rel.maximal_state(mice)[0])) for mice in separated_ces
     ]
 
     purview_state_labels = list(map(label_purview_state, separated_ces))
