@@ -978,7 +978,7 @@ def plot_ces_epicycles(
     max_order=3,
     purview_x_offset=0.1,
     mechanism_z_offset=0,
-    vertex_size_range=(0, 0),
+    vertex_size_range=(10, 30),
     edge_size_range=(0.5, 2),
     surface_size_range=(0.005, 0.25),
     plot_dimentions=(800, 1000),
@@ -1004,7 +1004,7 @@ def plot_ces_epicycles(
     show_per_mechanism_purview_qfolds=False,
     show_grid=False,
     network_name="",
-    eye_coordinates=(1, 1, 0.5),
+    eye_coordinates=(0.7, 0.7, 0.1),
     hovermode="x",
     digraph_filename="digraph.png",
     digraph_layout=None,
@@ -1029,6 +1029,7 @@ def plot_ces_epicycles(
     mechanism_label_bold=False,
     state_as_lettercase=False,
     state_as_annotation=True,
+    annotation_z_spacing=0.1,
 ):
 
     if state_as_lettercase:
@@ -1778,14 +1779,17 @@ def plot_ces_epicycles(
     ]
 
     if state_as_annotation:
+
         annotations = [
             [
                 dict(
                     visible=True,
                     showarrow=False,
-                    x=xm[i] - (n * 0.1),
+                    x=xm[i],
                     y=ym[i],
-                    z=zm[i] + 0,
+                    z=zm[i]
+                    - n * annotation_z_spacing
+                    + ((len(label) - 1) / 2) * annotation_z_spacing,
                     text=node_label,
                     font=dict(
                         size=mechanism_labels_size,
