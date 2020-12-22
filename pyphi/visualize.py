@@ -1030,6 +1030,8 @@ def plot_ces_epicycles(
     state_as_lettercase=False,
     state_as_annotation=True,
     annotation_z_spacing=0.1,
+    annotation_x_spacing=0,
+    annotation_y_spacing=0,
 ):
 
     if state_as_lettercase:
@@ -1785,8 +1787,12 @@ def plot_ces_epicycles(
                 dict(
                     visible=True,
                     showarrow=False,
-                    x=xm[i],
-                    y=ym[i],
+                    x=xm[i]
+                    - n * annotation_x_spacing
+                    + ((len(label) - 1) / 2) * annotation_x_spacing,
+                    y=ym[i]
+                    - n * annotation_y_spacing
+                    + ((len(label) - 1) / 2) * annotation_y_spacing,
                     z=zm[i]
                     - n * annotation_z_spacing
                     + ((len(label) - 1) / 2) * annotation_z_spacing,
