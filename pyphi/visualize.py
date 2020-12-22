@@ -966,6 +966,10 @@ def regular_polygon(n, center=(0, 0), angle=0, z=0, radius=None, scale=1):
         return coord_list
 
 
+def get_mechanism_state(mechanism, subsystem):
+    return tuple(subsystem.state[i] for i in mechanism)
+
+
 def plot_ces_epicycles(
     subsystem,
     ces,
@@ -974,23 +978,23 @@ def plot_ces_epicycles(
     max_order=3,
     purview_x_offset=0.1,
     mechanism_z_offset=0,
-    vertex_size_range=(10, 20),
+    vertex_size_range=(0, 0),
     edge_size_range=(0.5, 2),
-    surface_size_range=(0.005, 0.5),
+    surface_size_range=(0.005, 0.25),
     plot_dimentions=(800, 1000),
-    mechanism_labels_size=14,
+    mechanism_labels_size=12,
     mechanism_state_labels_size=12,
     labels_z_offset=0,
     states_z_offset=0.15,
     purview_labels_size=12,
     purview_state_labels_size=10,
-    show_mechanism_labels=True,
+    show_mechanism_labels="legendonly",
     show_links=True,
     show_mechanism_state_labels="legendonly",
     show_purview_labels=True,
     show_purview_state_labels="legendonly",
     show_vertices_mechanisms="legendonly",
-    show_vertices_purviews=True,
+    show_vertices_purviews="legendonly",
     show_edges=True,
     show_mesh=True,
     show_node_qfolds=False,
@@ -1000,7 +1004,7 @@ def plot_ces_epicycles(
     show_per_mechanism_purview_qfolds=False,
     show_grid=False,
     network_name="",
-    eye_coordinates=(1, 1, 1),
+    eye_coordinates=(1, 1, 0.5),
     hovermode="x",
     digraph_filename="digraph.png",
     digraph_layout=None,
@@ -1016,14 +1020,15 @@ def plot_ces_epicycles(
     ground_floor_height=0,
     epicycle_radius=0.4,
     base_center=(0, 0),
-    base_scale=1,
+    base_scale=1.5,
     base_floor_height=2,
-    base_z_offset=0,
+    base_z_offset=0.1,
     base_opacity=0.1,
     show_mechanism_base=True,
     base_intensity=0.5,
-    state_as_lettercase=True,
-    mechanism_label_bold=True,
+    mechanism_label_bold=False,
+    state_as_lettercase=False,
+    state_as_annotation=True,
 ):
 
     if state_as_lettercase:
@@ -1032,6 +1037,8 @@ def plot_ces_epicycles(
             if state_as_lettercase
             else False
         )
+    else:
+        system_state = False
 
     # Select only relations <= max_order
     relations = list(filter(lambda r: len(r.relata) <= max_order, relations))
@@ -1715,7 +1722,7 @@ def plot_ces_epicycles(
                 )
                 fig.add_trace(triangle_three_relation_trace)
 
-        # Create figure
+    # Create figure
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     axes_range = [
         (min(d) - 1, max(d) + 1)
@@ -1763,7 +1770,39 @@ def plot_ces_epicycles(
 
     # Apply layout
     fig.layout = layout
-    # from matplotlib._png import read_png
+
+    # Make labels as annotations:
+    mechanism_states = [get_mechanism_state(mech, subsystem) for mech in mechanisms]
+    mechanism_annotation_labels = [
+        label_mechanism(mice, bold=False, state=False) for mice in separated_ces[::2]
+    ]
+
+    if state_as_annotation:
+        annotations = [
+            [
+                dict(
+                    visible=True,
+                    showarrow=False,
+                    x=xm[i] - (n * 0.1),
+                    y=ym[i],
+                    z=zm[i] + 0,
+                    text=node_label,
+                    font=dict(
+                        size=mechanism_labels_size,
+                        color="white" if mechanism_states[i][n] == 1 else "black",
+                    ),
+                    opacity=1,
+                    bordercolor="black",
+                    borderwidth=1,
+                    borderpad=2,
+                    bgcolor="black" if mechanism_states[i][n] == 1 else "white",
+                )
+                for n, node_label in enumerate(label)
+            ]
+            for i, label in enumerate(mechanism_annotation_labels)
+        ]
+        annotations = list(flatten(annotations))
+        fig.update_layout(scene=dict(annotations=annotations))
 
     if show_causal_model:
         # Create system image
