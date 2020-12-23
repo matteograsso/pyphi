@@ -1061,7 +1061,7 @@ def plot_ces_epicycles(
     annotation_y_spacing=0,
     link_width_range=(1, 4),
     show_chains=True,
-    chain_width=5,
+    chain_width=3,
 ):
 
     if state_as_lettercase:
