@@ -984,17 +984,17 @@ def get_purview_label_text_color(mice):
         direction = mice.direction.value
         state = get_purview_state(mice)
         if direction==0:
-            return ['red' if s==1 else 'white' for s in state]
+            return ['white' if s==1 else 'red' for s in state]
         else:
-            return ['green' if s==1 else 'white' for s in state]    
+            return ['white' if s==1 else 'green' for s in state]    
 
 def get_purview_label_bg_color(mice):
         direction = mice.direction.value
         state = get_purview_state(mice)
         if direction==0:
-            return ['white' if s==1 else 'red' for s in state]
+            return ['red' if s==1 else 'white' for s in state]
         else:
-            return ['white' if s==1 else 'green' for s in state]    
+            return ['green' if s==1 else 'white' for s in state]    
 
 
 def plot_ces_epicycles(
