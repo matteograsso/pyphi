@@ -997,6 +997,11 @@ def get_purview_label_bg_color(mice):
             return ['white' if s==1 else 'green' for s in state]    
 
 
+def relative_phi(ces,mini=0.1,maxi=1):
+    max_phi = max(c.phi for c in ces)
+    return [(maxi-mini)*c.phi/max_phi+mini for c in ces]
+
+
 def plot_ces_epicycles(
     subsystem,
     ces,
@@ -1062,6 +1067,8 @@ def plot_ces_epicycles(
     link_width_range=(1, 4),
     show_chains=True,
     chain_width=3,
+    code_phi_by_alpha=False,
+    
 ):
 
     if state_as_lettercase:
@@ -1093,13 +1100,13 @@ def plot_ces_epicycles(
     floors = [
         np.array(
             regular_polygon(
-                int(comb(N, k)),
+                int(comb(N, k+1)),
                 center=floor_center,
                 z=k + ground_floor_height,
                 scale=floor_scale,
             )
         )
-        for k in range(1, N + 1)
+        for k in range( N )
     ]
     floor_vertices = np.concatenate([f for f in floors])
 
@@ -1846,6 +1853,8 @@ def plot_ces_epicycles(
         mechanism_label_text_colors = [get_mechanism_label_text_color(mice.mechanism,subsystem) for mice in separated_ces[::2]]
         mechanism_label_bg_colors = [get_mechanism_label_bg_color(mice.mechanism,subsystem) for mice in separated_ces[::2]]
         
+        mech_alpha = relative_phi(ces,mini=0.1,maxi=1) if code_phi_by_alpha else [1,]*len(ces)
+
         annotations_mechanisms = [
             [
                 dict(
@@ -1865,7 +1874,7 @@ def plot_ces_epicycles(
                         size=mechanism_labels_size,
                         color=mechanism_label_text_colors[i][n],
                     ),
-                    opacity=1,
+                    opacity=mech_alpha[i],
                     bordercolor='black',
                     borderwidth=1,
                     borderpad=2,
@@ -1876,14 +1885,16 @@ def plot_ces_epicycles(
             for i, label in enumerate(mechanism_annotation_labels)
         ]
         annotations_mechanisms = list(flatten(annotations_mechanisms))
-        fig.update_layout(scene=dict(annotations=annotations_mechanisms))
+        #fig.update_layout(scene=dict(annotations=annotations_mechanisms))
 
         # Make purview labels as annotations:
         purview_annotation_labels = [
             label_purview(mice, state=False) for mice in separated_ces
         ]
         purview_label_text_colors = [get_purview_label_text_color(mice) for mice in separated_ces]
-        purview_label_bg_colors = [get_purview_label_bg_color(mice) for mice in separated_ces]       
+        purview_label_bg_colors = [get_purview_label_bg_color(mice) for mice in separated_ces] 
+
+        purview_alpha = relative_phi(separated_ces,mini=0.1,maxi=1) if code_phi_by_alpha else [1,]*len(separated_ces)
 
         annotations_purviews = [
             [
@@ -1904,7 +1915,7 @@ def plot_ces_epicycles(
                         size=purview_labels_size,
                         color=purview_label_text_colors[i][n],                        
                     ),
-                    opacity=1,
+                    opacity=purview_alpha[i],
                     bordercolor='black',
                     borderwidth=1,
                     borderpad=2,
@@ -1915,7 +1926,8 @@ def plot_ces_epicycles(
             for i, label in enumerate(purview_annotation_labels)
         ]
         annotations_purviews = list(flatten(annotations_purviews))
-        fig.update_layout(scene=dict(annotations=annotations_purviews))      
+        annotations_all = annotations_mechanisms + annotations_purviews
+        fig.update_layout(scene=dict(annotations=annotations_all))      
 
     if show_causal_model:
         # Create system image
