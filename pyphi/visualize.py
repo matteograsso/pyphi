@@ -1008,7 +1008,7 @@ def plot_ces_epicycles(
     vertex_size_range=(10, 30),
     edge_size_range=(0.5, 2),
     surface_size_range=(0.005, 0.25),
-    plot_dimentions=(800, 1000),
+    plot_dimentions=None,
     mechanism_labels_size=12,
     mechanism_state_labels_size=12,
     labels_z_offset=0,
@@ -1059,6 +1059,9 @@ def plot_ces_epicycles(
     annotation_z_spacing=0.1,
     annotation_x_spacing=0,
     annotation_y_spacing=0,
+    link_width_range=(1, 4),
+    show_chains=True,
+    chain_width=5,
 ):
 
     if state_as_lettercase:
@@ -1261,6 +1264,35 @@ def plot_ces_epicycles(
     )
     fig.add_trace(mechanism_base_trace)
 
+    # Make mechanism chains
+    first_order_mechanisms = list(filter(lambda m: len(m) == 1, mechanisms))
+
+    chained_mechanisms = [] 
+    for m1,mech in enumerate(mechanisms):
+        for m2 in first_order_mechanisms:
+            if m2[0] in mech:
+                chained_mechanisms.append((m1,m2[0])) 
+
+    chains_xs = [(xm[c[0]],xm[c[1]]) for c in chained_mechanisms]
+    chains_ys = [(ym[c[0]],ym[c[1]]) for c in chained_mechanisms]
+    chains_zs = [(zm[c[0]],zm[c[1]]) for c in chained_mechanisms]
+
+    for m,mechanism in enumerate(chained_mechanisms):
+        chains_trace = go.Scatter3d(
+            visible=show_chains,
+            legendgroup="Chains",
+            showlegend=True if m == 0 else False,
+            x=chains_xs[m],
+            y=chains_ys[m],
+            z=chains_zs[m],
+            mode="lines",
+            name="Chains",
+            line_width=chain_width,
+            line_color="black",
+            hoverinfo="skip",
+            )
+        fig.add_trace(chains_trace)
+
     # Make mechanism state labels trace
     labels_mechanisms_state_trace = go.Scatter3d(
         visible=show_mechanism_state_labels,
@@ -1438,6 +1470,9 @@ def plot_ces_epicycles(
         list(zip(z, flatten(list(zip(zm, zm))))),
     )
 
+    links_widths = normalize_sizes(
+        link_width_range[0], link_width_range[1], separated_ces)
+    
     for i, distinction in enumerate(separated_ces):
         link_trace = go.Scatter3d(
             visible=show_links,
@@ -1448,7 +1483,7 @@ def plot_ces_epicycles(
             z=coords_links[2][i],
             mode="lines",
             name="Links",
-            line_width=link_width,
+            line_width=links_widths[i],
             line_color="brown",
             hoverinfo="skip",
             # hovertext=hovertext_relation(relation),
@@ -1794,8 +1829,8 @@ def plot_ces_epicycles(
             )
         ),
         autosize=True,
-        # height=plot_dimentions[0],
-        # width=plot_dimentions[1],
+        height=plot_dimentions[0] if plot_dimentions else None,
+        width=plot_dimentions[1] if plot_dimentions else None,
     )
 
     # Apply layout
