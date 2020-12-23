@@ -969,6 +969,33 @@ def regular_polygon(n, center=(0, 0), angle=0, z=0, radius=None, scale=1):
 def get_mechanism_state(mechanism, subsystem):
     return tuple(subsystem.state[i] for i in mechanism)
 
+def get_mechanism_label_text_color(mechanism, subsystem):
+    state = get_mechanism_state(mechanism, subsystem)
+    return ['white' if s==1 else 'black' for s in state]
+
+def get_mechanism_label_bg_color(mechanism, subsystem):
+    state = get_mechanism_state(mechanism, subsystem)
+    return ['black' if s==1 else 'white' for s in state]    
+
+def get_purview_state(mice):
+    return tuple([rel.maximal_state(mice)[0][n] for n in mice.purview])
+
+def get_purview_label_text_color(mice):
+        direction = mice.direction.value
+        state = get_purview_state(mice)
+        if direction==0:
+            return ['red' if s==1 else 'white' for s in state]
+        else:
+            return ['green' if s==1 else 'white' for s in state]    
+
+def get_purview_label_bg_color(mice):
+        direction = mice.direction.value
+        state = get_purview_state(mice)
+        if direction==0:
+            return ['white' if s==1 else 'red' for s in state]
+        else:
+            return ['white' if s==1 else 'green' for s in state]    
+
 
 def plot_ces_epicycles(
     subsystem,
@@ -991,7 +1018,7 @@ def plot_ces_epicycles(
     show_mechanism_labels="legendonly",
     show_links=True,
     show_mechanism_state_labels="legendonly",
-    show_purview_labels=True,
+    show_purview_labels="legendonly",
     show_purview_state_labels="legendonly",
     show_vertices_mechanisms="legendonly",
     show_vertices_purviews="legendonly",
@@ -1024,7 +1051,7 @@ def plot_ces_epicycles(
     base_floor_height=2,
     base_z_offset=0.1,
     base_opacity=0.1,
-    show_mechanism_base=True,
+    show_mechanism_base='legendonly',
     base_intensity=0.5,
     mechanism_label_bold=False,
     state_as_lettercase=False,
@@ -1775,14 +1802,16 @@ def plot_ces_epicycles(
     fig.layout = layout
 
     # Make labels as annotations:
-    mechanism_states = [get_mechanism_state(mech, subsystem) for mech in mechanisms]
-    mechanism_annotation_labels = [
-        label_mechanism(mice, bold=False, state=False) for mice in separated_ces[::2]
-    ]
-
     if state_as_annotation:
 
-        annotations = [
+        # Make mechanism labels as annotations:
+        mechanism_annotation_labels = [
+            label_mechanism(mice, bold=False, state=False) for mice in separated_ces[::2]
+        ]
+        mechanism_label_text_colors = [get_mechanism_label_text_color(mice.mechanism,subsystem) for mice in separated_ces[::2]]
+        mechanism_label_bg_colors = [get_mechanism_label_bg_color(mice.mechanism,subsystem) for mice in separated_ces[::2]]
+        
+        annotations_mechanisms = [
             [
                 dict(
                     visible=True,
@@ -1799,20 +1828,59 @@ def plot_ces_epicycles(
                     text=node_label,
                     font=dict(
                         size=mechanism_labels_size,
-                        color="white" if mechanism_states[i][n] == 1 else "black",
+                        color=mechanism_label_text_colors[i][n],
                     ),
                     opacity=1,
-                    bordercolor="black",
+                    bordercolor='black',
                     borderwidth=1,
                     borderpad=2,
-                    bgcolor="black" if mechanism_states[i][n] == 1 else "white",
+                    bgcolor=mechanism_label_bg_colors[i][n],
                 )
                 for n, node_label in enumerate(label)
             ]
             for i, label in enumerate(mechanism_annotation_labels)
         ]
-        annotations = list(flatten(annotations))
-        fig.update_layout(scene=dict(annotations=annotations))
+        annotations_mechanisms = list(flatten(annotations_mechanisms))
+        fig.update_layout(scene=dict(annotations=annotations_mechanisms))
+
+        # Make purview labels as annotations:
+        purview_annotation_labels = [
+            label_purview(mice, state=False) for mice in separated_ces
+        ]
+        purview_label_text_colors = [get_purview_label_text_color(mice) for mice in separated_ces]
+        purview_label_bg_colors = [get_purview_label_bg_color(mice) for mice in separated_ces]       
+
+        annotations_purviews = [
+            [
+                dict(
+                    visible=True,
+                    showarrow=False,
+                    x=x[i]
+                    - n * annotation_x_spacing
+                    + ((len(label) - 1) / 2) * annotation_x_spacing,
+                    y=y[i]
+                    - n * annotation_y_spacing
+                    + ((len(label) - 1) / 2) * annotation_y_spacing,
+                    z=z[i]
+                    - n * annotation_z_spacing
+                    + ((len(label) - 1) / 2) * annotation_z_spacing,
+                    text=node_label,
+                    font=dict(
+                        size=purview_labels_size,
+                        color=purview_label_text_colors[i][n],                        
+                    ),
+                    opacity=1,
+                    bordercolor='black',
+                    borderwidth=1,
+                    borderpad=2,
+                    bgcolor=purview_label_bg_colors[i][n],
+                )
+                for n, node_label in enumerate(label)
+            ]
+            for i, label in enumerate(purview_annotation_labels)
+        ]
+        annotations_purviews = list(flatten(annotations_purviews))
+        fig.update_layout(scene=dict(annotations=annotations_purviews))      
 
     if show_causal_model:
         # Create system image
