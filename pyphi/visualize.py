@@ -1213,6 +1213,11 @@ def plot_ces_epicycles(
     mechanism_state_labels = [
         label_mechanism_state(subsystem, distinction) for distinction in ces
     ]
+
+    # Get labels of intersected mechanisms (if specified)
+    if intersect_mechanisms:
+        intersected_mechanisms_labels = [make_label(mechanism, node_labels=subsystem.node_labels, bold=False, state=False) for mechanism in intersect_mechanisms]
+
     # purview_labels = list(map(label_purview, separated_ces))
     purview_labels = [
         label_purview(mice, state=list(rel.maximal_state(mice)[0]))
@@ -1490,6 +1495,7 @@ def plot_ces_epicycles(
     #intersectionCount = 0  # A flag and a counter for the times there is a check for intersection and it is found.
     intersection_2_relations_counter = 0
     intersection_3_relations_counter = 0
+    intersection_links_counter = 0
     # Plot distinction links (edge connecting cause, mechanism, effect vertices)
     coords_links = (
         list(zip(x, flatten(list(zip(xm, xm))))),
@@ -1504,7 +1510,7 @@ def plot_ces_epicycles(
         link_trace = go.Scatter3d(
             visible=show_links,
             legendgroup="Links",
-            showlegend=True if i == 1 else False,
+            showlegend=True if i == 0 else False,
             x=coords_links[0][i],
             y=coords_links[1][i],
             z=coords_links[2][i],
@@ -1517,6 +1523,27 @@ def plot_ces_epicycles(
         )
 
         fig.add_trace(link_trace)
+
+        # Make trace link for intersection only
+        if intersect_mechanisms and distinction.mechanism in intersect_mechanisms:
+            intersection_link_trace = go.Scatter3d(
+                visible=show_intersection,
+                legendgroup="intersection links",
+                showlegend=True if intersection_links_counter == 0 else False,
+                x=coords_links[0][i],
+                y=coords_links[1][i],
+                z=coords_links[2][i],
+                mode="lines",
+                name=f"{' ∩ '.join(intersected_mechanisms_labels)} Links",
+                line_width=links_widths[i],
+                line_color="brown",
+                hoverinfo="skip",
+                # hovertext=hovertext_relation(relation),
+            )
+
+            intersection_links_counter += 1
+
+            fig.add_trace(intersection_link_trace)
 
     # 2-relations
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1668,7 +1695,6 @@ def plot_ces_epicycles(
 
                 #Make intersection 2-relations traces and legendgroup
                 if intersect_mechanisms:
-                    intersected_mechanisms_labels = [make_label(mechanism, node_labels=subsystem.node_labels, bold=False, state=False) for mechanism in intersect_mechanisms]
 
                     if all(m in relation.mechanisms for m in intersect_mechanisms):
      
@@ -1844,7 +1870,6 @@ def plot_ces_epicycles(
 
                 #Make intersection 3-relations traces and legendgroup
                 if intersect_mechanisms:
-                    intersected_mechanisms_labels = [make_label(mechanism, node_labels=subsystem.node_labels, bold=False, state=False) for mechanism in intersect_mechanisms]
 
                     if all(m in relation.mechanisms for m in intersect_mechanisms):
      
