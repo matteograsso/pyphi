@@ -1284,6 +1284,22 @@ def plot_ces_epicycles(
     chains_ys = [(ym[c[0]],ym[c[1]]) for c in chained_mechanisms]
     chains_zs = [(zm[c[0]],zm[c[1]]) for c in chained_mechanisms]
 
+    # for m,mechanism in enumerate(chained_mechanisms):
+    #     chains_trace = go.Scatter3d(
+    #         visible=show_chains,
+    #         legendgroup="Chains",
+    #         showlegend=True if m == 0 else False,
+    #         x=chains_xs[m],
+    #         y=chains_ys[m],
+    #         z=chains_zs[m],
+    #         mode="lines",
+    #         # dash="dot",
+    #         name="Chains",
+    #         line_width=chain_width,
+    #         line_color="black",
+    #         hoverinfo="skip",
+    #         )
+    #     fig.add_trace(chains_trace)
     for m,mechanism in enumerate(chained_mechanisms):
         chains_trace = go.Scatter3d(
             visible=show_chains,
@@ -1294,8 +1310,7 @@ def plot_ces_epicycles(
             z=chains_zs[m],
             mode="lines",
             name="Chains",
-            line_width=chain_width,
-            line_color="black",
+            line={'dash': 'dash', 'color':"black",'width':chain_width},
             hoverinfo="skip",
             )
         fig.add_trace(chains_trace)
@@ -1916,7 +1931,7 @@ def plot_ces_epicycles(
                         color=purview_label_text_colors[i][n],                        
                     ),
                     opacity=purview_alpha[i],
-                    bordercolor='black',
+                    bordercolor=purview_label_text_colors[i][n],
                     borderwidth=1,
                     borderpad=2,
                     bgcolor=purview_label_bg_colors[i][n],
