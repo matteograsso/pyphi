@@ -1020,13 +1020,13 @@ def plot_ces_epicycles(
     states_z_offset=0.15,
     purview_labels_size=12,
     purview_state_labels_size=10,
-    show_mechanism_labels="legendonly",
+    show_mechanism_labels=False,
     show_links=True,
-    show_mechanism_state_labels="legendonly",
-    show_purview_labels="legendonly",
-    show_purview_state_labels="legendonly",
-    show_vertices_mechanisms="legendonly",
-    show_vertices_purviews="legendonly",
+    show_mechanism_state_labels=False,
+    show_purview_labels=False,
+    show_purview_state_labels=False,
+    show_vertices_mechanisms=False,
+    show_vertices_purviews=False,
     show_edges=True,
     show_mesh=True,
     show_node_qfolds=False,
@@ -1056,7 +1056,7 @@ def plot_ces_epicycles(
     base_floor_height=2,
     base_z_offset=0.1,
     base_opacity=0.1,
-    show_mechanism_base='legendonly',
+    show_mechanism_base=False,
     base_intensity=0.5,
     mechanism_label_bold=False,
     state_as_lettercase=False,
@@ -1068,11 +1068,15 @@ def plot_ces_epicycles(
     show_chains=True,
     chain_width=3,
     code_phi_by_alpha=False,
-    show_intersection='legendonly',
     intersect_mechanisms=None,
 
     
 ):
+
+    if intersect_mechanisms:
+        show_links='legendonly'
+        show_edges='legendonly'
+        show_mesh='legendonly'
 
     if state_as_lettercase:
         system_state = (
@@ -1527,7 +1531,7 @@ def plot_ces_epicycles(
         # Make trace link for intersection only
         if intersect_mechanisms and distinction.mechanism in intersect_mechanisms:
             intersection_link_trace = go.Scatter3d(
-                visible=show_intersection,
+                visible=True,
                 legendgroup="intersection links",
                 showlegend=True if intersection_links_counter == 0 else False,
                 x=coords_links[0][i],
@@ -1699,7 +1703,7 @@ def plot_ces_epicycles(
                     if all(m in relation.mechanisms for m in intersect_mechanisms):
      
                         intersection_two_relation_trace = go.Scatter3d(
-                            visible=show_intersection,
+                            visible=True,
                             legendgroup=f"{' ∩ '.join(intersected_mechanisms_labels)} 2-Relations",
                             showlegend=True if intersection_2_relations_counter == 0 else False,
                             x=two_relations_coords[0][r],
@@ -1874,7 +1878,7 @@ def plot_ces_epicycles(
                     if all(m in relation.mechanisms for m in intersect_mechanisms):
      
                         intersection_three_relation_trace = go.Mesh3d(
-                            visible=show_intersection,
+                            visible=True,
                             legendgroup=f"{' ∩ '.join(intersected_mechanisms_labels)} 3-Relations",
                             showlegend=True if intersection_3_relations_counter == 0 else False,
                             # x, y, and z are the coordinates of vertices
