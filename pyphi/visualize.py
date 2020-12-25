@@ -1068,6 +1068,9 @@ def plot_ces_epicycles(
     show_chains=True,
     chain_width=3,
     code_phi_by_alpha=False,
+    show_intersection='legendonly',
+    intersect_mechanisms=None,
+
     
 ):
 
@@ -1484,7 +1487,9 @@ def plot_ces_epicycles(
     legend_mechanism_purviews = []
     legend_intersection = []
 
-    intersectionCount = 0  # A flag and a counter for the times there is a check for intersection and it is found.
+    #intersectionCount = 0  # A flag and a counter for the times there is a check for intersection and it is found.
+    intersection_2_relations_counter = 0
+    intersection_3_relations_counter = 0
     # Plot distinction links (edge connecting cause, mechanism, effect vertices)
     coords_links = (
         list(zip(x, flatten(list(zip(xm, xm))))),
@@ -1557,6 +1562,8 @@ def plot_ces_epicycles(
             ):
                 relation_nodes = list(flatten(relation.mechanisms))
                 relation_color = get_edge_color(relation, colorcode_2_relations)
+
+
 
                 # Make node contexts traces and legendgroups
                 if show_node_qfolds:
@@ -1658,6 +1665,32 @@ def plot_ces_epicycles(
                 )
 
                 fig.add_trace(edge_two_relation_trace)
+
+                #Make intersection 2-relations traces and legendgroup
+                if intersect_mechanisms:
+                    intersected_mechanisms_labels = [make_label(mechanism, node_labels=subsystem.node_labels, bold=False, state=False) for mechanism in intersect_mechanisms]
+
+                    if all(m in relation.mechanisms for m in intersect_mechanisms):
+     
+                        intersection_two_relation_trace = go.Scatter3d(
+                            visible=show_intersection,
+                            legendgroup=f"{' ∩ '.join(intersected_mechanisms_labels)} 2-Relations",
+                            showlegend=True if intersection_2_relations_counter == 0 else False,
+                            x=two_relations_coords[0][r],
+                            y=two_relations_coords[1][r],
+                            z=two_relations_coords[2][r],
+                            mode="lines",
+                            # name=label_relation(relation),
+                            name=f"{' ∩ '.join(intersected_mechanisms_labels)} 2-Relations",
+                            line_width=two_relations_sizes[r],
+                            line_color=relation_color,
+                            hoverinfo="text",
+                            hovertext=hovertext_relation(relation),
+                        )
+
+                        intersection_2_relations_counter += 1
+
+                        fig.add_trace(intersection_two_relation_trace)
 
     # 3-relations
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1808,6 +1841,37 @@ def plot_ces_epicycles(
                     hovertext=hovertext_relation(relation),
                 )
                 fig.add_trace(triangle_three_relation_trace)
+
+                #Make intersection 3-relations traces and legendgroup
+                if intersect_mechanisms:
+                    intersected_mechanisms_labels = [make_label(mechanism, node_labels=subsystem.node_labels, bold=False, state=False) for mechanism in intersect_mechanisms]
+
+                    if all(m in relation.mechanisms for m in intersect_mechanisms):
+     
+                        intersection_three_relation_trace = go.Mesh3d(
+                            visible=show_intersection,
+                            legendgroup=f"{' ∩ '.join(intersected_mechanisms_labels)} 3-Relations",
+                            showlegend=True if intersection_3_relations_counter == 0 else False,
+                            # x, y, and z are the coordinates of vertices
+                            x=x,
+                            y=y,
+                            z=z,
+                            # i, j, and k are the vertices of triangles
+                            i=[i[r]],
+                            j=[j[r]],
+                            k=[k[r]],
+                            intensity=np.linspace(0, 1, len(x), endpoint=True),
+                            opacity=three_relations_sizes[r],
+                            colorscale="viridis",
+                            showscale=False,
+                            name=f"{' ∩ '.join(intersected_mechanisms_labels)} 3-Relations",
+                            hoverinfo="text",
+                            hovertext=hovertext_relation(relation),
+                        )
+
+                        intersection_3_relations_counter += 1
+
+                        fig.add_trace(intersection_three_relation_trace)
 
     # Create figure
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
