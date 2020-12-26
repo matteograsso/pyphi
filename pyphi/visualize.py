@@ -1287,45 +1287,50 @@ def plot_ces_epicycles(
     first_order_mechanisms = list(filter(lambda m: len(m) == 1, mechanisms))
 
     chained_mechanisms = [] 
+    chain_counter=0
     for m1,mech in enumerate(mechanisms):
         for m2 in first_order_mechanisms:
             if m2[0] in mech:
-                chained_mechanisms.append((m1,m2[0])) 
+                chained_mechanisms.append((chain_counter,(m1,m2[0])))
+                chain_counter+=1
+    
 
-    chains_xs = [(xm[c[0]],xm[c[1]]) for c in chained_mechanisms]
-    chains_ys = [(ym[c[0]],ym[c[1]]) for c in chained_mechanisms]
-    chains_zs = [(zm[c[0]],zm[c[1]]) for c in chained_mechanisms]
+    chains_xs = [(xm[c[0]],xm[c[1]]) for i,c in chained_mechanisms]
+    chains_ys = [(ym[c[0]],ym[c[1]]) for i,c in chained_mechanisms]
+    chains_zs = [(zm[c[0]],zm[c[1]]) for i,c in chained_mechanisms]
 
-    # for m,mechanism in enumerate(chained_mechanisms):
-    #     chains_trace = go.Scatter3d(
-    #         visible=show_chains,
-    #         legendgroup="Chains",
-    #         showlegend=True if m == 0 else False,
-    #         x=chains_xs[m],
-    #         y=chains_ys[m],
-    #         z=chains_zs[m],
-    #         mode="lines",
-    #         # dash="dot",
-    #         name="Chains",
-    #         line_width=chain_width,
-    #         line_color="black",
-    #         hoverinfo="skip",
-    #         )
-    #     fig.add_trace(chains_trace)
-    for m,mechanism in enumerate(chained_mechanisms):
-        chains_trace = go.Scatter3d(
-            visible=show_chains,
-            legendgroup="Chains",
-            showlegend=True if m == 0 else False,
-            x=chains_xs[m],
-            y=chains_ys[m],
-            z=chains_zs[m],
-            mode="lines",
-            name="Chains",
-            line={'dash': 'dash', 'color':"black",'width':chain_width},
-            hoverinfo="skip",
-            )
-        fig.add_trace(chains_trace)
+    if intersect_mechanisms:
+        for m,mechanism in chained_mechanisms:
+            if mechanism in intersect_mechanisms:
+                chains_trace = go.Scatter3d(
+                    visible=show_chains,
+                    legendgroup="Chains",
+                    showlegend=True if m == 0 else False,
+                    x=chains_xs[m],
+                    y=chains_ys[m],
+                    z=chains_zs[m],
+                    mode="lines",
+                    name="Chains",
+                    line={'dash': 'dash', 'color':"black",'width':chain_width},
+                    hoverinfo="skip",
+                    )
+                fig.add_trace(chains_trace)
+    else:
+        for m,mechanism in chained_mechanisms:
+
+            chains_trace = go.Scatter3d(
+                visible=show_chains,
+                legendgroup="Chains",
+                showlegend=True if m == 0 else False,
+                x=chains_xs[m],
+                y=chains_ys[m],
+                z=chains_zs[m],
+                mode="lines",
+                name="Chains",
+                line={'dash': 'dash', 'color':"black",'width':chain_width},
+                hoverinfo="skip",
+                )
+            fig.add_trace(chains_trace)
 
     # Make mechanism state labels trace
     labels_mechanisms_state_trace = go.Scatter3d(
@@ -1506,11 +1511,13 @@ def plot_ces_epicycles(
         list(zip(y, flatten(list(zip(ym, ym))))),
         list(zip(z, flatten(list(zip(zm, zm))))),
     )
-
-    links_widths = normalize_sizes(
-        link_width_range[0], link_width_range[1], separated_ces)
     
-    for i, distinction in enumerate(separated_ces):
+    links_widths = normalize_sizes(
+        link_width_range[0], link_width_range[1], ces)
+
+    links_widths = list(flatten(list(zip(links_widths,links_widths))))
+        
+    for i, purview in enumerate(separated_ces):
         link_trace = go.Scatter3d(
             visible=show_links,
             legendgroup="Links",
@@ -1529,7 +1536,7 @@ def plot_ces_epicycles(
         fig.add_trace(link_trace)
 
         # Make trace link for intersection only
-        if intersect_mechanisms and distinction.mechanism in intersect_mechanisms:
+        if intersect_mechanisms and purview.mechanism in intersect_mechanisms:
             intersection_link_trace = go.Scatter3d(
                 visible=True,
                 legendgroup="intersection links",
