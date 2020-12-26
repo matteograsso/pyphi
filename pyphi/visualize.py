@@ -1963,37 +1963,76 @@ def plot_ces_epicycles(
         
         mech_alpha = relative_phi(ces,mini=0.1,maxi=1) if code_phi_by_alpha else [1,]*len(ces)
 
-        annotations_mechanisms = [
-            [
-                dict(
-                    visible=True,
-                    showarrow=False,
-                    x=xm[i]
-                    - n * annotation_x_spacing
-                    + ((len(label) - 1) / 2) * annotation_x_spacing,
-                    y=ym[i]
-                    - n * annotation_y_spacing
-                    + ((len(label) - 1) / 2) * annotation_y_spacing,
-                    z=zm[i]
-                    - n * annotation_z_spacing
-                    + ((len(label) - 1) / 2) * annotation_z_spacing,
-                    text=node_label,
-                    font=dict(
-                        size=mechanism_labels_size,
-                        color=mechanism_label_text_colors[i][n],
-                    ),
-                    opacity=mech_alpha[i],
-                    bordercolor='black',
-                    borderwidth=1,
-                    borderpad=2,
-                    bgcolor=mechanism_label_bg_colors[i][n],
-                )
-                for n, node_label in enumerate(label)
-            ]
-            for i, label in enumerate(mechanism_annotation_labels)
+        if intersect_mechanisms:
+            #Plot only intersected mechanisms' labels if specified
+            mechanism_annotation_indices_labels = [
+            (i,label_mechanism(mice, state=False, bold=False)) for i,mice in enumerate(separated_ces[::2]) if mice.mechanism in intersect_mechanisms
         ]
+            # print(mechanism_annotation_indices_labels)
+            
+            annotations_mechanisms = [
+                [
+                    dict(
+                        visible=True,
+                        showarrow=False,
+                        x=xm[i]
+                        - n * annotation_x_spacing
+                        + ((len(label) - 1) / 2) * annotation_x_spacing,
+                        y=ym[i]
+                        - n * annotation_y_spacing
+                        + ((len(label) - 1) / 2) * annotation_y_spacing,
+                        z=zm[i]
+                        - n * annotation_z_spacing
+                        + ((len(label) - 1) / 2) * annotation_z_spacing,
+                        text=node_label,
+                        font=dict(
+                            size=mechanism_labels_size,
+                            color=mechanism_label_text_colors[i][n],
+                        ),
+                        opacity=mech_alpha[i],
+                        bordercolor='black',
+                        borderwidth=1,
+                        borderpad=2,
+                        bgcolor=mechanism_label_bg_colors[i][n],
+                    )
+                    for n, node_label in enumerate(label)
+                ]
+                for i, label in mechanism_annotation_indices_labels
+            ]
+            # print(annotations_mechanisms)
+
+        else:
+            #Plot all mechanisms' labels
+            annotations_mechanisms = [
+                [
+                    dict(
+                        visible=True,
+                        showarrow=False,
+                        x=xm[i]
+                        - n * annotation_x_spacing
+                        + ((len(label) - 1) / 2) * annotation_x_spacing,
+                        y=ym[i]
+                        - n * annotation_y_spacing
+                        + ((len(label) - 1) / 2) * annotation_y_spacing,
+                        z=zm[i]
+                        - n * annotation_z_spacing
+                        + ((len(label) - 1) / 2) * annotation_z_spacing,
+                        text=node_label,
+                        font=dict(
+                            size=mechanism_labels_size,
+                            color=mechanism_label_text_colors[i][n],
+                        ),
+                        opacity=mech_alpha[i],
+                        bordercolor='black',
+                        borderwidth=1,
+                        borderpad=2,
+                        bgcolor=mechanism_label_bg_colors[i][n],
+                    )
+                    for n, node_label in enumerate(label)
+                ]
+                for i, label in enumerate(mechanism_annotation_labels)
+            ]
         annotations_mechanisms = list(flatten(annotations_mechanisms))
-        #fig.update_layout(scene=dict(annotations=annotations_mechanisms))
 
         # Make purview labels as annotations:
         purview_annotation_labels = [
@@ -2004,35 +2043,72 @@ def plot_ces_epicycles(
 
         purview_alpha = relative_phi(separated_ces,mini=0.1,maxi=1) if code_phi_by_alpha else [1,]*len(separated_ces)
 
-        annotations_purviews = [
-            [
-                dict(
-                    visible=True,
-                    showarrow=False,
-                    x=x[i]
-                    - n * annotation_x_spacing
-                    + ((len(label) - 1) / 2) * annotation_x_spacing,
-                    y=y[i]
-                    - n * annotation_y_spacing
-                    + ((len(label) - 1) / 2) * annotation_y_spacing,
-                    z=z[i]
-                    - n * annotation_z_spacing
-                    + ((len(label) - 1) / 2) * annotation_z_spacing,
-                    text=node_label,
-                    font=dict(
-                        size=purview_labels_size,
-                        color=purview_label_text_colors[i][n],                        
-                    ),
-                    opacity=purview_alpha[i],
-                    bordercolor=purview_label_text_colors[i][n],
-                    borderwidth=1,
-                    borderpad=2,
-                    bgcolor=purview_label_bg_colors[i][n],
-                )
-                for n, node_label in enumerate(label)
-            ]
-            for i, label in enumerate(purview_annotation_labels)
+        if intersect_mechanisms:
+            #Plot only intersected mechanisms' purview labels if specified
+            purview_annotation_labels_and_indices = [
+            (i,label_purview(mice, state=False)) for i,mice in enumerate(separated_ces) if mice.mechanism in intersect_mechanisms
         ]
+
+            annotations_purviews = [
+                [
+                    dict(
+                        visible=True,
+                        showarrow=False,
+                        x=x[i]
+                        - n * annotation_x_spacing
+                        + ((len(label) - 1) / 2) * annotation_x_spacing,
+                        y=y[i]
+                        - n * annotation_y_spacing
+                        + ((len(label) - 1) / 2) * annotation_y_spacing,
+                        z=z[i]
+                        - n * annotation_z_spacing
+                        + ((len(label) - 1) / 2) * annotation_z_spacing,
+                        text=node_label,
+                        font=dict(
+                            size=purview_labels_size,
+                            color=purview_label_text_colors[i][n],                        
+                        ),
+                        opacity=purview_alpha[i],
+                        bordercolor=purview_label_text_colors[i][n],
+                        borderwidth=1,
+                        borderpad=2,
+                        bgcolor=purview_label_bg_colors[i][n],
+                    )
+                    for n, node_label in enumerate(label)
+                ]
+                for i, label in purview_annotation_labels_and_indices
+            ]
+        else:
+            #Plot all intersected mechanisms' purview labels
+            annotations_purviews = [
+                [
+                    dict(
+                        visible=True,
+                        showarrow=False,
+                        x=x[i]
+                        - n * annotation_x_spacing
+                        + ((len(label) - 1) / 2) * annotation_x_spacing,
+                        y=y[i]
+                        - n * annotation_y_spacing
+                        + ((len(label) - 1) / 2) * annotation_y_spacing,
+                        z=z[i]
+                        - n * annotation_z_spacing
+                        + ((len(label) - 1) / 2) * annotation_z_spacing,
+                        text=node_label,
+                        font=dict(
+                            size=purview_labels_size,
+                            color=purview_label_text_colors[i][n],                        
+                        ),
+                        opacity=purview_alpha[i],
+                        bordercolor=purview_label_text_colors[i][n],
+                        borderwidth=1,
+                        borderpad=2,
+                        bgcolor=purview_label_bg_colors[i][n],
+                    )
+                    for n, node_label in enumerate(label)
+                ]
+                for i, label in enumerate(purview_annotation_labels)
+            ]
         annotations_purviews = list(flatten(annotations_purviews))
         annotations_all = annotations_mechanisms + annotations_purviews
         fig.update_layout(scene=dict(annotations=annotations_all))      
