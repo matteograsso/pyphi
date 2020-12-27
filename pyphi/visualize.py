@@ -996,6 +996,13 @@ def get_purview_label_bg_color(mice):
         else:
             return ['green' if s==1 else 'white' for s in state]    
 
+def get_purview_label_border_color(mice):
+        direction = mice.direction.value
+        if direction==0:
+            return 'red'
+        else:
+            return 'green'
+
 
 def relative_phi(ces,mini=0.1,maxi=1):
     max_phi = max(c.phi for c in ces)
@@ -1069,6 +1076,8 @@ def plot_ces_epicycles(
     chain_width=3,
     code_phi_by_alpha=False,
     intersect_mechanisms=None,
+    paper_bgcolor='white',
+    plot_bgcolor='white',
 
     
 ):
@@ -1953,6 +1962,9 @@ def plot_ces_epicycles(
         autosize=True,
         height=plot_dimentions[0] if plot_dimentions else None,
         width=plot_dimentions[1] if plot_dimentions else None,
+        paper_bgcolor=paper_bgcolor,
+        plot_bgcolor=plot_bgcolor,
+        
     )
 
     # Apply layout
@@ -2047,6 +2059,7 @@ def plot_ces_epicycles(
         ]
         purview_label_text_colors = [get_purview_label_text_color(mice) for mice in separated_ces]
         purview_label_bg_colors = [get_purview_label_bg_color(mice) for mice in separated_ces] 
+        purview_label_border_colors = [get_purview_label_border_color(mice) for mice in separated_ces] 
 
         purview_alpha = relative_phi(separated_ces,mini=0.1,maxi=1) if code_phi_by_alpha else [1,]*len(separated_ces)
 
@@ -2076,7 +2089,7 @@ def plot_ces_epicycles(
                             color=purview_label_text_colors[i][n],                        
                         ),
                         opacity=purview_alpha[i],
-                        bordercolor=purview_label_text_colors[i][n],
+                        bordercolor=purview_label_border_colors[i],
                         borderwidth=1,
                         borderpad=2,
                         bgcolor=purview_label_bg_colors[i][n],
@@ -2107,7 +2120,7 @@ def plot_ces_epicycles(
                             color=purview_label_text_colors[i][n],                        
                         ),
                         opacity=purview_alpha[i],
-                        bordercolor=purview_label_text_colors[i][n],
+                        bordercolor=purview_label_border_colors[i],
                         borderwidth=1,
                         borderpad=2,
                         bgcolor=purview_label_bg_colors[i][n],
