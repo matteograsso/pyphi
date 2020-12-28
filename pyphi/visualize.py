@@ -980,13 +980,19 @@ def get_mechanism_label_bg_color(mechanism, subsystem):
 def get_purview_state(mice):
     return tuple([rel.maximal_state(mice)[0][n] for n in mice.purview])
 
-def get_purview_label_text_color(mice):
+def get_purview_label_text_color(mice, composition=False):
         direction = mice.direction.value
         state = get_purview_state(mice)
-        if direction==0:
-            return ['white' if s==1 else 'red' for s in state]
+        if composition:
+            if direction==0:
+                return ['red' for s in state]
+            else:
+                return ['green' for s in state]    
         else:
-            return ['white' if s==1 else 'green' for s in state]    
+            if direction==0:
+                return ['white' if s==1 else 'red' for s in state]
+            else:
+                return ['white' if s==1 else 'green' for s in state]    
 
 def get_purview_label_bg_color(mice):
         direction = mice.direction.value
@@ -1078,6 +1084,12 @@ def plot_ces_epicycles(
     intersect_mechanisms=None,
     paper_bgcolor='white',
     plot_bgcolor='white',
+    composition=False,
+    composition_color='#c2c2c2',
+    composition_link_width=3,
+    # composition_edge_width=1,
+    # composition_surface_opacity=1,
+
 
     
 ):
@@ -1525,6 +1537,8 @@ def plot_ces_epicycles(
         link_width_range[0], link_width_range[1], ces)
 
     links_widths = list(flatten(list(zip(links_widths,links_widths))))
+    if composition:
+        links_widths = [composition_link_width for l in links_widths]
         
     for i, purview in enumerate(separated_ces):
         link_trace = go.Scatter3d(
@@ -1537,7 +1551,7 @@ def plot_ces_epicycles(
             mode="lines",
             name="Links",
             line_width=links_widths[i],
-            line_color="brown",
+            line_color=composition_color if composition else "brown",
             hoverinfo="skip",
             # hovertext=hovertext_relation(relation),
         )
@@ -1706,7 +1720,7 @@ def plot_ces_epicycles(
                     # name=label_relation(relation),
                     name="All 2-Relations",
                     line_width=two_relations_sizes[r],
-                    line_color=relation_color,
+                    line_color=composition_color if composition else relation_color,
                     hoverinfo="text",
                     hovertext=hovertext_relation(relation),
                 )
@@ -1729,7 +1743,7 @@ def plot_ces_epicycles(
                             # name=label_relation(relation),
                             name=f"{' ∩ '.join(intersected_mechanisms_labels)} 2-Relations",
                             line_width=two_relations_sizes[r],
-                            line_color=relation_color,
+                            line_color=composition_color if composition else relation_color,
                             hoverinfo="text",
                             hovertext=hovertext_relation(relation),
                         )
@@ -1880,7 +1894,7 @@ def plot_ces_epicycles(
                     # Intensity of each vertex, which will be interpolated and color-coded
                     intensity=np.linspace(0, 1, len(x), endpoint=True),
                     opacity=three_relations_sizes[r],
-                    colorscale="viridis",
+                    colorscale="Greys" if composition else "viridis",
                     showscale=False,
                     name="All 3-Relations",
                     hoverinfo="text",
@@ -1907,7 +1921,7 @@ def plot_ces_epicycles(
                             k=[k[r]],
                             intensity=np.linspace(0, 1, len(x), endpoint=True),
                             opacity=three_relations_sizes[r],
-                            colorscale="viridis",
+                            colorscale="Greys" if composition else "viridis",
                             showscale=False,
                             name=f"{' ∩ '.join(intersected_mechanisms_labels)} 3-Relations",
                             hoverinfo="text",
@@ -2006,13 +2020,13 @@ def plot_ces_epicycles(
                         text=node_label,
                         font=dict(
                             size=mechanism_labels_size,
-                            color=mechanism_label_text_colors[i][n],
+                            color='black' if composition else mechanism_label_text_colors[i][n],
                         ),
                         opacity=mech_alpha[i],
                         bordercolor='black',
                         borderwidth=1,
                         borderpad=2,
-                        bgcolor=mechanism_label_bg_colors[i][n],
+                        bgcolor=composition_color if composition else mechanism_label_bg_colors[i][n],
                     )
                     for n, node_label in enumerate(label)
                 ]
@@ -2039,13 +2053,13 @@ def plot_ces_epicycles(
                         text=node_label,
                         font=dict(
                             size=mechanism_labels_size,
-                            color=mechanism_label_text_colors[i][n],
+                            color='black' if composition else mechanism_label_text_colors[i][n],
                         ),
                         opacity=mech_alpha[i],
                         bordercolor='black',
                         borderwidth=1,
                         borderpad=2,
-                        bgcolor=mechanism_label_bg_colors[i][n],
+                        bgcolor=composition_color if composition else mechanism_label_bg_colors[i][n],
                     )
                     for n, node_label in enumerate(label)
                 ]
@@ -2057,7 +2071,7 @@ def plot_ces_epicycles(
         purview_annotation_labels = [
             label_purview(mice, state=False) for mice in separated_ces
         ]
-        purview_label_text_colors = [get_purview_label_text_color(mice) for mice in separated_ces]
+        purview_label_text_colors = [get_purview_label_text_color(mice, composition) for mice in separated_ces]
         purview_label_bg_colors = [get_purview_label_bg_color(mice) for mice in separated_ces] 
         purview_label_border_colors = [get_purview_label_border_color(mice) for mice in separated_ces] 
 
@@ -2092,7 +2106,7 @@ def plot_ces_epicycles(
                         bordercolor=purview_label_border_colors[i],
                         borderwidth=1,
                         borderpad=2,
-                        bgcolor=purview_label_bg_colors[i][n],
+                        bgcolor=composition_color if composition else purview_label_bg_colors[i][n],
                     )
                     for n, node_label in enumerate(label)
                 ]
@@ -2123,7 +2137,7 @@ def plot_ces_epicycles(
                         bordercolor=purview_label_border_colors[i],
                         borderwidth=1,
                         borderpad=2,
-                        bgcolor=purview_label_bg_colors[i][n],
+                        bgcolor=composition_color if composition else purview_label_bg_colors[i][n],
                     )
                     for n, node_label in enumerate(label)
                 ]
