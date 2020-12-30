@@ -1028,12 +1028,13 @@ def plot_ces_epicycles(
     surface_size_range=(0.005, 0.25),
     plot_dimentions=None,
     mechanism_labels_size=12,
+    mechanism_label_position='middle left',
     mechanism_state_labels_size=12,
     labels_z_offset=0,
     states_z_offset=0.15,
     purview_labels_size=12,
     purview_state_labels_size=10,
-    show_mechanism_labels=False,
+    show_mechanism_labels=True,
     show_links=True,
     show_mechanism_state_labels=False,
     show_purview_labels=False,
@@ -1065,7 +1066,7 @@ def plot_ces_epicycles(
     ground_floor_height=0,
     epicycle_radius=0.4,
     base_center=(0, 0),
-    base_scale=1.5,
+    base_scale=.5,
     base_floor_height=2,
     base_z_offset=0.1,
     base_opacity=0.1,
@@ -1073,13 +1074,14 @@ def plot_ces_epicycles(
     base_intensity=0.5,
     mechanism_label_bold=False,
     state_as_lettercase=False,
-    state_as_annotation=True,
+    mechanisms_as_annotations=False,
+    purviews_as_annotations=True,
     annotation_z_spacing=0.1,
     annotation_x_spacing=0,
     annotation_y_spacing=0,
     link_width_range=(1, 4),
     show_chains=True,
-    chain_width=3,
+    chain_width=10,
     code_phi_by_alpha=False,
     intersect_mechanisms=None,
     paper_bgcolor='white',
@@ -1087,11 +1089,10 @@ def plot_ces_epicycles(
     composition=False,
     composition_color='#c2c2c2',
     composition_link_width=3,
+    composition_surface_opacity=None,
+    composition_surface_intensity=None,
     # composition_edge_width=1,
-    # composition_surface_opacity=1,
-
-
-    
+    # composition_surface_opacity=1,    
 ):
 
     if intersect_mechanisms:
@@ -1268,16 +1269,16 @@ def plot_ces_epicycles(
 
     # Make mechanism labels trace
     labels_mechanisms_trace = go.Scatter3d(
-        visible=show_mechanism_labels,
+        visible= show_mechanism_labels if not mechanisms_as_annotations else False,
         x=xm,
         y=ym,
-        z=zm,
+        z=[n + labels_z_offset for n in zm],
         mode="text",
         text=mechanism_labels,
         name="Mechanism Labels",
         showlegend=True,
         textfont=dict(size=mechanism_labels_size, color="black"),
-        textposition="middle center",
+        textposition=mechanism_label_position,
         hoverinfo="text",
         hovertext=mechanism_hovertext,
         hoverlabel=dict(bgcolor="black", font_color="white"),
@@ -1892,8 +1893,8 @@ def plot_ces_epicycles(
                     j=[j[r]],
                     k=[k[r]],
                     # Intensity of each vertex, which will be interpolated and color-coded
-                    intensity=np.linspace(0, 1, len(x), endpoint=True),
-                    opacity=three_relations_sizes[r],
+                    intensity=[composition_surface_intensity for x in range(len(x))] if composition else np.linspace(0, 1, len(x), endpoint=True),
+                    opacity=composition_surface_opacity if composition else three_relations_sizes[r],
                     colorscale="Greys" if composition else "viridis",
                     showscale=False,
                     name="All 3-Relations",
@@ -1985,7 +1986,7 @@ def plot_ces_epicycles(
     fig.layout = layout
 
     # Make labels as annotations:
-    if state_as_annotation:
+    if mechanisms_as_annotations:
 
         # Make mechanism labels as annotations:
         mechanism_annotation_labels = [
@@ -2067,6 +2068,8 @@ def plot_ces_epicycles(
             ]
         annotations_mechanisms = list(flatten(annotations_mechanisms))
 
+    if purviews_as_annotations:
+
         # Make purview labels as annotations:
         purview_annotation_labels = [
             label_purview(mice, state=False) for mice in separated_ces
@@ -2144,7 +2147,9 @@ def plot_ces_epicycles(
                 for i, label in enumerate(purview_annotation_labels)
             ]
         annotations_purviews = list(flatten(annotations_purviews))
-        annotations_all = annotations_mechanisms + annotations_purviews
+
+        annotations_all = annotations_mechanisms + annotations_purviews if mechanisms_as_annotations else annotations_purviews
+
         fig.update_layout(scene=dict(annotations=annotations_all))      
 
     if show_causal_model:
