@@ -1083,7 +1083,10 @@ def plot_ces_epicycles(
     link_width_range=(1, 4),
     show_chains=True,
     chain_width=10,
-    code_phi_by_alpha=False,
+    annotation_alpha_from_mechanism_phi=False,
+    annotation_alpha_from_purview_phi=False,
+    annotations_alpha_mechanism_label=.75,
+    annotations_alpha_purview_label=.75,
     intersect_mechanisms=None,
     paper_bgcolor='white',
     plot_bgcolor='white',
@@ -1996,7 +1999,7 @@ def plot_ces_epicycles(
         mechanism_label_text_colors = [get_mechanism_label_text_color(mice.mechanism,subsystem) for mice in separated_ces[::2]]
         mechanism_label_bg_colors = [get_mechanism_label_bg_color(mice.mechanism,subsystem) for mice in separated_ces[::2]]
         
-        mech_alpha = relative_phi(ces,mini=0.1,maxi=1) if code_phi_by_alpha else [1,]*len(ces)
+        mech_alpha = relative_phi(ces,mini=0.1,maxi=1) if annotation_alpha_from_mechanism_phi else [annotations_alpha_mechanism_label,]*len(ces)
 
         if intersect_mechanisms:
             #Plot only intersected mechanisms' labels if specified
@@ -2079,7 +2082,7 @@ def plot_ces_epicycles(
         purview_label_bg_colors = [get_purview_label_bg_color(mice) for mice in separated_ces] 
         purview_label_border_colors = [get_purview_label_border_color(mice) for mice in separated_ces] 
 
-        purview_alpha = relative_phi(separated_ces,mini=0.1,maxi=1) if code_phi_by_alpha else [1,]*len(separated_ces)
+        purview_alpha = relative_phi(separated_ces,mini=0.1,maxi=1) if annotation_alpha_from_purview_phi else [annotations_alpha_purview_label,]*len(separated_ces)
 
         if intersect_mechanisms:
             #Plot only intersected mechanisms' purview labels if specified
