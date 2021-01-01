@@ -1064,6 +1064,8 @@ def plot_ces_epicycles(
     left_margin=get_screen_size()[0] / 10,
     floor_center=(0, 0),
     floor_scale=2,
+    floor_scales=None,
+    floor_angles=None,
     ground_floor_height=0,
     epicycle_radius=0.4,
     base_center=(0, 0),
@@ -1139,8 +1141,9 @@ def plot_ces_epicycles(
             regular_polygon(
                 int(comb(N, k+1)),
                 center=floor_center,
+                angle=floor_angles[k] if floor_angles else 0,
                 z=k + ground_floor_height,
-                scale=floor_scale,
+                scale=floor_scales[k] if floor_scales else floor_scale,
             )
         )
         for k in range( N )
@@ -1374,7 +1377,7 @@ def plot_ces_epicycles(
     chained_mechanisms_triplets = sorted(list(set(chained_mechanisms_triplets)))
 
     chained_mechanisms_triangles = np.array([triplet for triplet in chained_mechanisms_triplets if len(triplet)==3 and len(list(filter(lambda mechanism_index: mechanism_index >len(first_order_mechanisms)-1, triplet)))==1])
-    
+
     chains_mesh = go.Mesh3d(
                 visible=show_chain_mesh,
                 legendgroup="Chains mesh",
