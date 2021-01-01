@@ -1097,10 +1097,12 @@ def plot_ces_epicycles(
     paper_bgcolor='white',
     plot_bgcolor='white',
     composition=False,
-    composition_color='#c2c2c2',
+    composition_color='black',
     composition_link_width=3,
-    composition_surface_opacity=None,
-    composition_surface_intensity=None,
+    composition_surface_opacity=.5,
+    composition_surface_intensity=.5,
+    integration_cut_elements=None,
+    integration_color='black',
     # composition_edge_width=1,
     # composition_surface_opacity=1,    
 ):
@@ -1135,6 +1137,7 @@ def plot_ces_epicycles(
     purviews = [c.purview for c in separated_ces]
     mechanisms = [c.mechanism for c in separated_ces[::2]]
 
+
     # generate floors
     floors = [
         np.array(
@@ -1151,7 +1154,7 @@ def plot_ces_epicycles(
     floor_vertices = np.concatenate([f for f in floors])
 
     # getting a list of all possible purviews
-    all_purviews = list(powerset(range(N), nonempty=True))
+    all_purviews = list(powerset(subsystem.node_indices, nonempty=True))
 
     # find number of times each purview appears
     vertex_purview = {
@@ -1196,6 +1199,7 @@ def plot_ces_epicycles(
         for k in range(1, N + 1)
     ]
 
+
     base_vertices = np.concatenate([f for f in base])
     i = 0
     base_coords = []
@@ -1206,6 +1210,8 @@ def plot_ces_epicycles(
     xm = [p[0] for p in base_coords]
     ym = [p[1] for p in base_coords]
     zm = [p[2] for p in base_coords]
+
+
 
     # Dimensionality reduction
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1331,6 +1337,8 @@ def plot_ces_epicycles(
     chains_xs = [(xm[c[0]],xm[c[1]]) for i,c in chained_mechanisms]
     chains_ys = [(ym[c[0]],ym[c[1]]) for i,c in chained_mechanisms]
     chains_zs = [(zm[c[0]],zm[c[1]]) for i,c in chained_mechanisms]
+
+
 
     if intersect_mechanisms:
         for m,mechanism in chained_mechanisms:
@@ -1763,7 +1771,7 @@ def plot_ces_epicycles(
                     # name=label_relation(relation),
                     name="All 2-Relations",
                     line_width=two_relations_sizes[r],
-                    line_color=composition_color if composition else relation_color,
+                    line_color=composition_color if composition or any([m in flatten(relation.mechanisms) for m in integration_cut_elements]) else relation_color,
                     hoverinfo="text",
                     hovertext=hovertext_relation(relation),
                 )
@@ -1935,9 +1943,9 @@ def plot_ces_epicycles(
                     j=[j[r]],
                     k=[k[r]],
                     # Intensity of each vertex, which will be interpolated and color-coded
-                    intensity=[composition_surface_intensity for x in range(len(x))] if composition else np.linspace(0, 1, len(x), endpoint=True),
-                    opacity=composition_surface_opacity if composition else three_relations_sizes[r],
-                    colorscale="Greys" if composition else "viridis",
+                    intensity=[composition_surface_intensity for x in range(len(x))] if composition or any([m in flatten(relation.mechanisms) for m in integration_cut_elements]) else np.linspace(0, 1, len(x), endpoint=True),
+                    opacity=composition_surface_opacity if composition or any([m in flatten(relation.mechanisms) for m in integration_cut_elements]) else three_relations_sizes[r],
+                    colorscale="Greys" if composition or any([m in flatten(relation.mechanisms) for m in integration_cut_elements]) else "viridis",
                     showscale=False,
                     name="All 3-Relations",
                     hoverinfo="text",
@@ -2157,6 +2165,43 @@ def plot_ces_epicycles(
                 ]
                 for i, label in purview_annotation_labels_and_indices
             ]
+
+        elif integration_cut_elements:
+            integration_cut_elements_distinctions = [ces[m] for m in integration_cut_elements]
+            integration_cut_elements_labels = [
+            label_mechanism(m, state=False, bold=False) for m in integration_cut_elements_distinctions
+            ]
+        
+            annotations_purviews = [
+                [
+                    dict(
+                        visible=True,
+                        showarrow=False,
+                        x=x[i]
+                        - n * annotation_x_spacing
+                        + ((len(label) - 1) / 2) * annotation_x_spacing,
+                        y=y[i]
+                        - n * annotation_y_spacing
+                        + ((len(label) - 1) / 2) * annotation_y_spacing,
+                        z=z[i]
+                        - n * annotation_z_spacing
+                        + ((len(label) - 1) / 2) * annotation_z_spacing,
+                        text=node_label,
+                        font=dict(
+                            size=purview_labels_size,
+                            color=purview_label_text_colors[i][n],                        
+                        ),
+                        opacity=purview_alpha[i],
+                        bordercolor=purview_label_border_colors[i],
+                        borderwidth=1,
+                        borderpad=2,
+                        bgcolor=integration_color if any([m in label for m in integration_cut_elements_labels]) else purview_label_bg_colors[i][n],
+                    )
+                    for n, node_label in enumerate(label)
+                ]
+                for i, label in enumerate(purview_annotation_labels)
+            ]
+
         else:
             #Plot all intersected mechanisms' purview labels
             annotations_purviews = [
@@ -2188,6 +2233,10 @@ def plot_ces_epicycles(
                 ]
                 for i, label in enumerate(purview_annotation_labels)
             ]
+        
+       
+
+
         annotations_purviews = list(flatten(annotations_purviews))
 
         annotations_all = annotations_mechanisms + annotations_purviews if mechanisms_as_annotations else annotations_purviews
