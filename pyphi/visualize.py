@@ -1602,7 +1602,7 @@ def plot_ces_epicycles(
             mode="lines",
             name="Links",
             line_width=links_widths[i],
-            line_color=composition_color if composition else "brown",
+            line_color=composition_color if composition or any([m in purview.mechanism for m in integration_cut_elements]) else "brown",
             hoverinfo="skip",
             # hovertext=hovertext_relation(relation),
         )
