@@ -44,6 +44,11 @@ def get_screen_size():
 def flatten(iterable):
     return itertools.chain.from_iterable(iterable)
 
+def strip_punct(s):
+    return str(s.translate(str.maketrans({key: None for key in string.punctuation})).replace(' ', ''))
+
+def i2n(subsystem,mech):
+    return strip_punct(subsystem.indices2nodes(mech))
 
 def feature_matrix(ces, relations):
     """Return a matrix representing each cause and effect in the CES.
@@ -1099,12 +1104,11 @@ def plot_ces_epicycles(
     composition=False,
     composition_color='black',
     composition_link_width=3,
-    composition_surface_opacity=.5,
-    composition_surface_intensity=.5,
+    composition_surface_opacity=.05,
+    composition_surface_intensity=.05,
     integration_cut_elements=None,
-    integration_color='black',
-    # composition_edge_width=1,
-    # composition_surface_opacity=1,    
+    integration_color='gray',
+    composition_text_color="#727272",
 ):
 
     if intersect_mechanisms:
@@ -1602,7 +1606,7 @@ def plot_ces_epicycles(
             mode="lines",
             name="Links",
             line_width=links_widths[i],
-            line_color=composition_color if composition or any([m in purview.mechanism for m in integration_cut_elements]) else "brown",
+            line_color=composition_color if composition or (integration_cut_elements and any([m in purview.mechanism for m in integration_cut_elements])) else "brown",
             hoverinfo="skip",
             # hovertext=hovertext_relation(relation),
         )
@@ -1771,7 +1775,7 @@ def plot_ces_epicycles(
                     # name=label_relation(relation),
                     name="All 2-Relations",
                     line_width=two_relations_sizes[r],
-                    line_color=composition_color if composition or any([m in flatten(relation.mechanisms) for m in integration_cut_elements]) else relation_color,
+                    line_color=composition_color if composition or (integration_cut_elements and any([m in flatten(relation.mechanisms) for m in integration_cut_elements])) else relation_color,
                     hoverinfo="text",
                     hovertext=hovertext_relation(relation),
                 )
@@ -1943,9 +1947,9 @@ def plot_ces_epicycles(
                     j=[j[r]],
                     k=[k[r]],
                     # Intensity of each vertex, which will be interpolated and color-coded
-                    intensity=[composition_surface_intensity for x in range(len(x))] if composition or any([m in flatten(relation.mechanisms) for m in integration_cut_elements]) else np.linspace(0, 1, len(x), endpoint=True),
-                    opacity=composition_surface_opacity if composition or any([m in flatten(relation.mechanisms) for m in integration_cut_elements]) else three_relations_sizes[r],
-                    colorscale="Greys" if composition or any([m in flatten(relation.mechanisms) for m in integration_cut_elements]) else "viridis",
+                    intensity=[composition_surface_intensity for x in range(len(x))] if composition or (integration_cut_elements and any([m in flatten(relation.mechanisms) for m in integration_cut_elements])) else np.linspace(0, 1, len(x), endpoint=True),
+                    opacity=composition_surface_opacity if composition or (integration_cut_elements and any([m in flatten(relation.mechanisms) for m in integration_cut_elements])) else three_relations_sizes[r],
+                    colorscale="Greys" if composition or (integration_cut_elements and any([m in flatten(relation.mechanisms) for m in integration_cut_elements])) else "viridis",
                     showscale=False,
                     name="All 3-Relations",
                     hoverinfo="text",
@@ -2167,10 +2171,8 @@ def plot_ces_epicycles(
             ]
 
         elif integration_cut_elements:
-            integration_cut_elements_distinctions = [ces[m] for m in integration_cut_elements]
-            integration_cut_elements_labels = [
-            label_mechanism(m, state=False, bold=False) for m in integration_cut_elements_distinctions
-            ]
+            integration_cut_mechanisms = [tuple([m]) for m in integration_cut_elements]
+            integration_cut_elements_labels = strip_punct(str([subsystem.indices2nodes(mech) for mech in integration_cut_mechanisms]))
         
             annotations_purviews = [
                 [
@@ -2221,7 +2223,7 @@ def plot_ces_epicycles(
                         text=node_label,
                         font=dict(
                             size=purview_labels_size,
-                            color=purview_label_text_colors[i][n],                        
+                            color=composition_text_color if composition else purview_label_text_colors[i][n],                        
                         ),
                         opacity=purview_alpha[i],
                         bordercolor=purview_label_border_colors[i],
