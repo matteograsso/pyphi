@@ -1785,7 +1785,7 @@ def plot_ces_epicycles(
                 #Make intersection 2-relations traces and legendgroup
                 if intersect_mechanisms:
 
-                    if all(m in relation.mechanisms for m in intersect_mechanisms):
+                    if set(relation.mechanisms) == set(intersect_mechanisms):
      
                         intersection_two_relation_trace = go.Scatter3d(
                             visible=True,
@@ -1960,7 +1960,7 @@ def plot_ces_epicycles(
                 #Make intersection 3-relations traces and legendgroup
                 if intersect_mechanisms:
 
-                    if all(m in relation.mechanisms for m in intersect_mechanisms):
+                    if set(relation.mechanisms) == set(intersect_mechanisms):
      
                         intersection_three_relation_trace = go.Mesh3d(
                             visible=True,
