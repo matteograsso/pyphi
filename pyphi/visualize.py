@@ -1109,6 +1109,7 @@ def plot_ces_epicycles(
     integration_cut_elements=None,
     integration_color='gray',
     composition_text_color="#727272",
+    autosize=True,
 ):
 
     if intersect_mechanisms:
@@ -2019,7 +2020,7 @@ def plot_ces_epicycles(
                 font=dict(color="black", size=15),
             )
         ),
-        autosize=True,
+        autosize=autosize,
         height=plot_dimentions[0] if plot_dimentions else None,
         width=plot_dimentions[1] if plot_dimentions else None,
         paper_bgcolor=paper_bgcolor,
