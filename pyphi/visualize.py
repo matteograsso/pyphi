@@ -25,7 +25,7 @@ from pyphi import direction
 
 import tkinter as tk
 
-test = 1 + 2
+
 
 
 def get_screen_size():
@@ -1042,7 +1042,7 @@ def plot_ces_epicycles(
     show_mechanism_labels=True,
     show_links=True,
     show_mechanism_state_labels=False,
-    show_purview_labels=False,
+    show_purview_labels=True,
     show_purview_state_labels=False,
     show_vertices_mechanisms=False,
     show_vertices_purviews=False,
@@ -1082,9 +1082,9 @@ def plot_ces_epicycles(
     show_mechanism_base=False,
     base_intensity=1,
     mechanism_label_bold=False,
-    state_as_lettercase=False,
-    mechanisms_as_annotations=True,
-    purviews_as_annotations=True,
+    state_as_lettercase=True,
+    mechanisms_as_annotations=False,
+    purviews_as_annotations=False,
     annotation_z_spacing=0.175,
     annotation_z_spacing_mechanisms=.08,
     annotation_x_spacing=0,
@@ -1115,15 +1115,6 @@ def plot_ces_epicycles(
         show_links='legendonly'
         show_edges='legendonly'
         show_mesh='legendonly'
-
-    if state_as_lettercase:
-        system_state = (
-            [subsystem.state[n] for n in subsystem.node_indices]
-            if state_as_lettercase
-            else False
-        )
-    else:
-        system_state = False
 
     # Select only relations <= max_order
     relations = list(filter(lambda r: len(r.relata) <= max_order, relations))
@@ -1254,7 +1245,7 @@ def plot_ces_epicycles(
     # Get mechanism and purview labels (Quickly!)
     # mechanism_labels = list(map(label_mechanism, ces))
     mechanism_labels = [
-        label_mechanism(mice, bold=mechanism_label_bold, state=system_state)
+        label_mechanism(mice, bold=mechanism_label_bold, state=subsystem.state)
         for mice in separated_ces[::2]
     ]
     mechanism_state_labels = [
