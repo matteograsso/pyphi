@@ -24,7 +24,7 @@ from pyphi.utils import powerset
 from pyphi import direction
 
 import tkinter as tk
-
+from matplotlib.image import imread
 
 
 
@@ -1110,6 +1110,13 @@ def plot_ces_epicycles(
     integration_color='gray',
     composition_text_color="#727272",
     autosize=True,
+    image_center = (0,0),
+    image_z_offset = 0,
+    image_xy_scale = 2,
+    image_downsample = 10,
+    image_opacity = 0.9,
+    image_file = 'brain.png',
+    show_image = False,
 ):
 
     if intersect_mechanisms:
@@ -1979,12 +1986,49 @@ def plot_ces_epicycles(
 
                         fig.add_trace(intersection_three_relation_trace)
 
+    
+    # Add image to xy-plane
+    if show_image:
+        # loading image and subsampling to approximate resolution
+        img = imread(image_file)
+        
+        # getting 1D color representation (NOTE: dont know how to do RBG code)
+        img_shade = img[::image_downsample,::image_downsample,:3].mean(2)
+        # forcing shade to use the whole scale (0-1)
+        img_shade = 1-(img_shade-np.min(img_shade)+0.1)/(np.abs(np.max(img_shade)-np.min(img_shade))+0.2)
+
+        # getting variables to specify xy-plane to cover
+        xmin = np.min(x)
+        xmax = np.max(x)
+        ymin = np.min(y)
+        ymax = np.max(y)
+        xcenter = np.mean([xmin,xmax])
+        ycenter = np.mean([ymin,ymax])
+        new_x = np.array([xcenter-np.abs(xcenter-xmin)*image_xy_scale, xcenter+np.abs(xcenter-xmax)*image_xy_scale]) + image_center[0]
+        new_y = np.array([ycenter-np.abs(ycenter-ymin)*image_xy_scale, ycenter+np.abs(ycenter-ymax)*image_xy_scale]) + image_center[1]
+
+        z_im_pos = min([min(z),min(zm)]) + image_z_offset
+
+        x_im = np.linspace(new_x[0], new_x[1], img_shade.shape[0])
+        y_im = np.linspace(new_y[0], new_y[1], img_shade.shape[1])
+        z_im = np.ones((img_shade.shape[0],img_shade.shape[1]))*z_im_pos
+
+        xy_plane = go.Surface(x=x_im, y=y_im, z=z_im, surfacecolor=img_shade, opacity=image_opacity,
+                            colorscale="Greys",showscale=False,)
+        fig.add_trace(xy_plane)
+
     # Create figure
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    axes_range = [
-        (min(d) - 1, max(d) + 1)
-        for d in (np.append(x, xm), np.append(y, ym), np.append(z, zm))
-    ]
+    if show_image:
+        axes_range = [
+            (min(d) - 1, max(d) + 1)
+            for d in (x_im, y_im, np.append(z, zm))
+        ]
+    else:
+        axes_range = [
+            (min(d) - 1, max(d) + 1)
+            for d in (np.append(x, xm), np.append(y, ym), np.append(z, zm))
+        ]
 
     axes = [
         dict(
