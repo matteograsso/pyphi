@@ -1285,7 +1285,7 @@ def plot_ces_epicycles(
         visible= show_mechanism_labels if not mechanisms_as_annotations else False,
         x=xm,
         y=ym,
-        z=[n + labels_z_offset for n in zm],
+        z=[n + labels_z_offset + mechanism_z_offset for n in zm],
         mode="text",
         text=mechanism_labels,
         name="Mechanism Labels",
@@ -1323,13 +1323,13 @@ def plot_ces_epicycles(
 
     chained_mechanisms = [] 
     chain_counter=0
-    for m1,mech in enumerate(mechanisms):
-        for m2 in first_order_mechanisms:
-            if m2[0] in mech:
-                chained_mechanisms.append((chain_counter,(m1,m2[0])))
+    for m1,mech1 in enumerate(mechanisms):
+        for m2,mech2 in enumerate(first_order_mechanisms):
+            if mech2[0] in mech1:
+                chained_mechanisms.append((chain_counter,(m1,m2)))
                 chain_counter+=1
     
-
+    
     chains_xs = [(xm[c[0]],xm[c[1]]) for i,c in chained_mechanisms]
     chains_ys = [(ym[c[0]],ym[c[1]]) for i,c in chained_mechanisms]
     chains_zs = [(zm[c[0]],zm[c[1]]) for i,c in chained_mechanisms]
