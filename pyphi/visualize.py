@@ -1342,11 +1342,27 @@ def plot_ces_epicycles(
     chains_ys = [(ym[c[0]],ym[c[1]]) for i,c in chained_mechanisms]
     chains_zs = [(zm[c[0]],zm[c[1]]) for i,c in chained_mechanisms]
 
+    if show_chains:
 
+        if intersect_mechanisms:
+            for m,mechanism in chained_mechanisms:
+                if mechanism in intersect_mechanisms:
+                    chains_trace = go.Scatter3d(
+                        visible=show_chains,
+                        legendgroup="Chains",
+                        showlegend=True if m == 0 else False,
+                        x=chains_xs[m],
+                        y=chains_ys[m],
+                        z=chains_zs[m],
+                        mode="lines",
+                        name="Chains",
+                        line={'dash': chain_dash, 'color':chain_color,'width':chain_width},
+                        hoverinfo="skip",
+                        )
+                    fig.add_trace(chains_trace)
+        else:
+            for m,mechanism in chained_mechanisms:
 
-    if intersect_mechanisms:
-        for m,mechanism in chained_mechanisms:
-            if mechanism in intersect_mechanisms:
                 chains_trace = go.Scatter3d(
                     visible=show_chains,
                     legendgroup="Chains",
@@ -1354,59 +1370,44 @@ def plot_ces_epicycles(
                     x=chains_xs[m],
                     y=chains_ys[m],
                     z=chains_zs[m],
-                    mode="lines",
+                    mode='lines',
                     name="Chains",
                     line={'dash': chain_dash, 'color':chain_color,'width':chain_width},
                     hoverinfo="skip",
                     )
                 fig.add_trace(chains_trace)
-    else:
-        for m,mechanism in chained_mechanisms:
-
-            chains_trace = go.Scatter3d(
-                visible=show_chains,
-                legendgroup="Chains",
-                showlegend=True if m == 0 else False,
-                x=chains_xs[m],
-                y=chains_ys[m],
-                z=chains_zs[m],
-                mode='lines',
-                name="Chains",
-                line={'dash': chain_dash, 'color':chain_color,'width':chain_width},
-                hoverinfo="skip",
-                )
-            fig.add_trace(chains_trace)
     
-    chained_mechanisms_pairs = [chain[1] for chain in chained_mechanisms]
+    if show_chains_mesh:
+        chained_mechanisms_pairs = [chain[1] for chain in chained_mechanisms]
 
-    chained_mechanisms_triplets = []
-    ss = []
-    for a, b in itertools.combinations(chained_mechanisms_pairs, 2):
-        s = set(a).union(b)
-        if len(s) == 3:
-            chained_mechanisms_triplets.append(tuple(sorted(s)))
+        chained_mechanisms_triplets = []
+        ss = []
+        for a, b in itertools.combinations(chained_mechanisms_pairs, 2):
+            s = set(a).union(b)
+            if len(s) == 3:
+                chained_mechanisms_triplets.append(tuple(sorted(s)))
 
-    chained_mechanisms_triplets = sorted(list(set(chained_mechanisms_triplets)))
+        chained_mechanisms_triplets = sorted(list(set(chained_mechanisms_triplets)))
 
-    chained_mechanisms_triangles = np.array([triplet for triplet in chained_mechanisms_triplets if len(triplet)==3 and len(list(filter(lambda mechanism_index: mechanism_index >len(first_order_mechanisms)-1, triplet)))==1])
+        chained_mechanisms_triangles = np.array([triplet for triplet in chained_mechanisms_triplets if len(triplet)==3 and len(list(filter(lambda mechanism_index: mechanism_index >len(first_order_mechanisms)-1, triplet)))==1])
 
-    chains_mesh = go.Mesh3d(
-                visible=show_chains_mesh,
-                legendgroup="Chains mesh",
-                showlegend=True,
-                x=xm,
-                y=ym,
-                z=zm,
-                i=chained_mechanisms_triangles[:,0],
-                j=chained_mechanisms_triangles[:,1],
-                k=chained_mechanisms_triangles[:,2],
-                name="Chains mesh",
-                intensity=[base_intensity for x in xm],
-                opacity=base_opacity,
-                colorscale=[base_color for x in xm],
-                showscale=False,
-                )
-    fig.add_trace(chains_mesh)
+        chains_mesh = go.Mesh3d(
+                    visible=show_chains_mesh,
+                    legendgroup="Chains mesh",
+                    showlegend=True,
+                    x=xm,
+                    y=ym,
+                    z=zm,
+                    i=chained_mechanisms_triangles[:,0],
+                    j=chained_mechanisms_triangles[:,1],
+                    k=chained_mechanisms_triangles[:,2],
+                    name="Chains mesh",
+                    intensity=[base_intensity for x in xm],
+                    opacity=base_opacity,
+                    colorscale=[base_color for x in xm],
+                    showscale=False,
+                    )
+        fig.add_trace(chains_mesh)
 
     # Make mechanism state labels trace
     labels_mechanisms_state_trace = go.Scatter3d(
