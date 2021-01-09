@@ -1091,7 +1091,7 @@ def plot_ces_epicycles(
     annotation_x_spacing=0,
     annotation_y_spacing=0,
     show_chains=True,
-    show_chain_mesh=True,
+    show_chains_mesh=True,
     chain_width=3,
     chain_color="black",
     chain_dash = 'dash',
@@ -1391,7 +1391,7 @@ def plot_ces_epicycles(
     chained_mechanisms_triangles = np.array([triplet for triplet in chained_mechanisms_triplets if len(triplet)==3 and len(list(filter(lambda mechanism_index: mechanism_index >len(first_order_mechanisms)-1, triplet)))==1])
 
     chains_mesh = go.Mesh3d(
-                visible=show_chain_mesh,
+                visible=show_chains_mesh,
                 legendgroup="Chains mesh",
                 showlegend=True,
                 x=xm,
