@@ -1597,45 +1597,46 @@ def plot_ces_epicycles(
     links_widths = list(flatten(list(zip(links_widths,links_widths))))
     if composition:
         links_widths = [composition_link_width for l in links_widths]
-        
-    for i, purview in enumerate(separated_ces):
-        link_trace = go.Scatter3d(
-            visible=show_links,
-            legendgroup="Links",
-            showlegend=True if i == 0 else False,
-            x=coords_links[0][i],
-            y=coords_links[1][i],
-            z=coords_links[2][i],
-            mode="lines",
-            name="Links",
-            line_width=links_widths[i],
-            line_color=composition_color if composition or (integration_cut_elements and any([m in purview.mechanism for m in integration_cut_elements])) else "brown",
-            hoverinfo="skip",
-            # hovertext=hovertext_relation(relation),
-        )
-
-        fig.add_trace(link_trace)
-
-        # Make trace link for intersection only
-        if intersect_mechanisms and purview.mechanism in intersect_mechanisms:
-            intersection_link_trace = go.Scatter3d(
-                visible=True,
-                legendgroup="intersection links",
-                showlegend=True if intersection_links_counter == 0 else False,
+    
+    if show_links:
+        for i, purview in enumerate(separated_ces):
+            link_trace = go.Scatter3d(
+                visible=show_links,
+                legendgroup="Links",
+                showlegend=True if i == 0 else False,
                 x=coords_links[0][i],
                 y=coords_links[1][i],
                 z=coords_links[2][i],
                 mode="lines",
-                name=f"{' ∩ '.join(intersected_mechanisms_labels)} Links",
+                name="Links",
                 line_width=links_widths[i],
-                line_color="brown",
+                line_color=composition_color if composition or (integration_cut_elements and any([m in purview.mechanism for m in integration_cut_elements])) else "brown",
                 hoverinfo="skip",
                 # hovertext=hovertext_relation(relation),
             )
 
-            intersection_links_counter += 1
+            fig.add_trace(link_trace)
 
-            fig.add_trace(intersection_link_trace)
+            # Make trace link for intersection only
+            if intersect_mechanisms and purview.mechanism in intersect_mechanisms:
+                intersection_link_trace = go.Scatter3d(
+                    visible=True,
+                    legendgroup="intersection links",
+                    showlegend=True if intersection_links_counter == 0 else False,
+                    x=coords_links[0][i],
+                    y=coords_links[1][i],
+                    z=coords_links[2][i],
+                    mode="lines",
+                    name=f"{' ∩ '.join(intersected_mechanisms_labels)} Links",
+                    line_width=links_widths[i],
+                    line_color="brown",
+                    hoverinfo="skip",
+                    # hovertext=hovertext_relation(relation),
+                )
+
+                intersection_links_counter += 1
+
+                fig.add_trace(intersection_link_trace)
 
     # 2-relations
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
