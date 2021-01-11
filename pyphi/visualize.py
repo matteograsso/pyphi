@@ -644,6 +644,52 @@ def plot_mechanism_qfolds3D(
                 legend_mechanisms.append(mechanism_label)
             return legend_mechanisms
 
+def plot_selected_mechanism_qfolds3D(
+    r,
+    relation,
+    mechanisms_list,
+    show_mesh,
+    node_labels,
+    go,
+    fig,
+    legend_mechanisms,
+    x,
+    y,
+    z,
+    i,
+    j,
+    k,
+    three_relations_sizes,
+):
+
+    for mechanism in mechanisms_list:
+        mechanism_label = make_label(mechanism, node_labels)
+        if mechanism in relation.mechanisms:
+            triangle_three_relation_trace = go.Mesh3d(
+                visible=show_mesh,
+                legendgroup=f"Selected Mechanism {mechanism_label} q-fold",
+                showlegend=True if mechanism_label not in legend_mechanisms else False,
+                # x, y, and z are the coordinates of vertices
+                x=x,
+                y=y,
+                z=z,
+                # i, j, and k are the vertices of triangles
+                i=[i[r]],
+                j=[j[r]],
+                k=[k[r]],
+                # Intensity of each vertex, which will be interpolated and color-coded
+                intensity=np.linspace(0, 1, len(x), endpoint=True),
+                opacity=three_relations_sizes[r],
+                colorscale="viridis",
+                showscale=False,
+                name=f"Mechanism {mechanism_label} q-fold",
+                hoverinfo="text",
+                hovertext=hovertext_relation(relation),
+            )
+            fig.add_trace(triangle_three_relation_trace)
+            if mechanism_label not in legend_mechanisms:
+                legend_mechanisms.append(mechanism_label)
+            return legend_mechanisms
 
 def plot_relation_purview_qfolds2D(
     r,
@@ -1162,7 +1208,9 @@ def plot_ces_epicycles(
     selected_mechanism_qfolds=None,
 ):
    
-    if intersect_mechanisms:
+    if intersect_mechanisms or selected_mechanism_qfolds:
+        show_chains='legendonly'
+        show_chains_mesh='legendonly'
         show_links='legendonly'
         show_edges='legendonly'
         show_mesh='legendonly'
@@ -2050,6 +2098,27 @@ def plot_ces_epicycles(
                         three_relations_sizes,
                     )
 
+                if selected_mechanism_qfolds:
+
+                    legend_mechanisms = plot_selected_mechanism_qfolds3D(
+                        r,
+                        relation,
+                        selected_mechanism_qfolds,
+                        show_mesh,
+                        node_labels,
+                        go,
+                        fig,
+                        legend_mechanisms,
+                        x,
+                        y,
+                        z,
+                        i,
+                        j,
+                        k,
+                        three_relations_sizes,
+                    )
+                
+
                 if show_compound_purview_qfolds:
 
                     legend_compound_purviews = plot_compound_purview_qfolds3D(
@@ -2114,6 +2183,9 @@ def plot_ces_epicycles(
                         k,
                         three_relations_sizes,
                     )
+
+                else:
+                    legend_mechanisms=[]
 
                 triangle_three_relation_trace = go.Mesh3d(
                     visible=show_mesh,
