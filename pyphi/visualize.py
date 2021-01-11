@@ -1206,7 +1206,7 @@ def plot_ces_epicycles(
     image_file = 'brain.png',
     show_image = False,
     selected_mechanism_qfolds=None,
-    img_background=True,
+    img_background=False,
 ):
    
     # if intersect_mechanisms or selected_mechanism_qfolds:
