@@ -1642,7 +1642,8 @@ def plot_ces_epicycles(
     #     fig.add_trace(selected_labels_cause_purviews_trace)
 
     # Make effect purview labels trace
-    selected_qfold_effects_labels = [effect_purview_labels[i] if selected_qfold_effects[i] else '' for i in range(len(effect_purview_labels))]
+    if selected_mechanism_qfolds:
+        selected_qfold_effects_labels = [effect_purview_labels[i] if selected_qfold_effects[i] else '' for i in range(len(effect_purview_labels))]
 
     labels_effect_purviews_trace = go.Scatter3d(
         visible=show_purview_labels if not intersect_mechanisms else 'legendonly',
