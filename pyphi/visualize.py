@@ -1119,7 +1119,7 @@ def plot_ces_epicycles(
     image_file = 'brain.png',
     show_image = False,
 ):
-
+   
     if intersect_mechanisms:
         show_links='legendonly'
         show_edges='legendonly'
@@ -2014,12 +2014,13 @@ def plot_ces_epicycles(
 
         z_im_pos = min([min(z),min(zm)]) + image_z_offset
 
-        x_im = np.linspace(new_x[0], new_x[1], img_shade.shape[0])
+        x_im = np.linspace(-new_x[0], -new_x[1], img_shade.shape[0])
         y_im = np.linspace(new_y[0], new_y[1], img_shade.shape[1])
         z_im = np.ones((img_shade.shape[0],img_shade.shape[1]))*z_im_pos
 
         xy_plane = go.Surface(x=x_im, y=y_im, z=z_im, surfacecolor=img_shade, opacity=image_opacity,
                             colorscale="Greys",showscale=False,)
+                  
         fig.add_trace(xy_plane)
 
     # Create figure
