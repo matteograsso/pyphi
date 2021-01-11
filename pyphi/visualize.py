@@ -1200,12 +1200,13 @@ def plot_ces_epicycles(
     autosize=True,
     image_center = (0,0),
     image_z_offset = 0,
-    image_xy_scale = 2,
+    image_xy_scale = 1,
     image_downsample = 10,
     image_opacity = 0.9,
     image_file = 'brain.png',
     show_image = False,
     selected_mechanism_qfolds=None,
+    img_background=True,
 ):
    
     # if intersect_mechanisms or selected_mechanism_qfolds:
@@ -1584,7 +1585,8 @@ def plot_ces_epicycles(
     fig.add_trace(vertices_mechanisms_trace)
 
     # Make cause purview labels trace
-    selected_qfold_causes_labels = [cause_purview_labels[i] if selected_qfold_causes[i] else '' for i in range(len(cause_purview_labels))]
+    if selected_mechanism_qfolds:
+        selected_qfold_causes_labels = [cause_purview_labels[i] if selected_qfold_causes[i] else '' for i in range(len(cause_purview_labels))]
     
     labels_cause_purviews_trace = go.Scatter3d(
         visible=show_purview_labels if not intersect_mechanisms else 'legendonly',
@@ -2302,7 +2304,7 @@ def plot_ces_epicycles(
 
     axes = [
         dict(
-            showbackground=False,
+            showbackground=img_background,
             showline=False,
             zeroline=False,
             showgrid=show_grid,
