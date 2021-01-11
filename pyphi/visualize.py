@@ -555,6 +555,46 @@ def plot_mechanism_qfolds2D(
 
             return legend_mechanisms
 
+def plot_selected_mechanism_qfolds2D(
+    r,
+    relation,
+    mechanisms_list,
+    show_edges,
+    node_labels,
+    go,
+    fig,
+    two_relations_coords,
+    two_relations_sizes,
+    legend_mechanisms,
+    relation_color,
+):
+    for mechanism in mechanisms_list:
+        mechanism_label = make_label(mechanism, node_labels)
+        if mechanism in relation.mechanisms:
+
+            edge_two_relation_trace = go.Scatter3d(
+                visible=show_edges,
+                legendgroup=f"Mechanism {mechanism_label} q-fold",
+                showlegend=True if mechanism_label not in legend_mechanisms else False,
+                x=two_relations_coords[0][r],
+                y=two_relations_coords[1][r],
+                z=two_relations_coords[2][r],
+                mode="lines",
+                name=f"Mechanism {mechanism_label} q-fold",
+                line_width=two_relations_sizes[r],
+                line_color=relation_color,
+                hoverinfo="text",
+                hovertext=hovertext_relation(relation),
+            )
+
+            fig.add_trace(edge_two_relation_trace)
+
+            if mechanism_label not in legend_mechanisms:
+
+                legend_mechanisms.append(mechanism_label)
+
+            return legend_mechanisms            
+
 
 def plot_mechanism_qfolds3D(
     r,
@@ -1025,6 +1065,7 @@ def plot_ces_epicycles(
     ces,
     relations,
     network=None,
+    title="",
     max_order=3,
     purview_x_offset=0.1,
     mechanism_z_offset=0,
@@ -1118,6 +1159,7 @@ def plot_ces_epicycles(
     image_opacity = 0.9,
     image_file = 'brain.png',
     show_image = False,
+    selected_mechanism_qfolds=None,
 ):
    
     if intersect_mechanisms:
@@ -1261,9 +1303,15 @@ def plot_ces_epicycles(
         label_mechanism_state(subsystem, distinction) for distinction in ces
     ]
 
-    # Get labels of intersected mechanisms (if specified)
+    # Get indices and labels of intersected mechanisms (if specified)
     if intersect_mechanisms:
+        intersected_mechanisms_indices = [i for i in range(len(ces)) if ces[i].mechanism in intersect_mechanisms]
         intersected_mechanisms_labels = [make_label(mechanism, node_labels=subsystem.node_labels, bold=False, state=False) for mechanism in intersect_mechanisms]
+
+# Get indices and labels of selected mechanisms q-fold (if specified)
+    if selected_mechanism_qfolds:
+        selected_mechanisms_indices = [i for i in range(len(ces)) if ces[i].mechanism in selected_mechanism_qfolds]
+        selected_mechanisms_labels = [make_label(mechanism, node_labels=subsystem.node_labels, bold=False, state=False) for mechanism in selected_mechanism_qfolds]        
 
     # purview_labels = list(map(label_purview, separated_ces))
     purview_labels = [
@@ -1290,7 +1338,7 @@ def plot_ces_epicycles(
 
     # Make mechanism labels trace
     labels_mechanisms_trace = go.Scatter3d(
-        visible= show_mechanism_labels if not mechanisms_as_annotations else False,
+        visible= 'legendonly' if mechanisms_as_annotations or intersect_mechanisms else show_mechanism_labels,
         x=xm,
         y=ym,
         z=[n + labels_z_offset + mechanism_z_offset for n in zm],
@@ -1305,6 +1353,44 @@ def plot_ces_epicycles(
         hoverlabel=dict(bgcolor="black", font_color="white"),
     )
     fig.add_trace(labels_mechanisms_trace)
+
+    #Make intersected mechanisms labels trace
+    if intersect_mechanisms:
+        intersected_labels_mechanisms_trace = go.Scatter3d(
+            visible= show_mechanism_labels if not mechanisms_as_annotations else False,
+            x=[xm[i] for i in intersected_mechanisms_indices],
+            y=[ym[i] for i in intersected_mechanisms_indices],
+            z=[zm[i] + labels_z_offset + mechanism_z_offset for i in intersected_mechanisms_indices],
+            mode="text",
+            text=[mechanism_labels[i] for i in intersected_mechanisms_indices],
+            name="Intersected Mechanism Labels",
+            showlegend=True,
+            textfont=dict(size=mechanism_labels_size, color="black"),
+            textposition=mechanism_label_position,
+            hoverinfo="text",
+            hovertext=[mechanism_hovertext[i] for i in intersected_mechanisms_indices],
+            hoverlabel=dict(bgcolor="black", font_color="white"),
+        )
+        fig.add_trace(intersected_labels_mechanisms_trace)
+
+    #Make selected mechanisms q-fold labels trace
+    if selected_mechanism_qfolds:
+        selected_labels_mechanisms_trace = go.Scatter3d(
+            visible= show_mechanism_labels if not mechanisms_as_annotations else False,
+            x=[xm[i] for i in selected_mechanisms_indices],
+            y=[ym[i] for i in selected_mechanisms_indices],
+            z=[zm[i] + labels_z_offset + mechanism_z_offset for i in selected_mechanisms_indices],
+            mode="text",
+            text=[mechanism_labels[i] for i in selected_mechanisms_indices],
+            name="Selected Mechanism Labels",
+            showlegend=True,
+            textfont=dict(size=mechanism_labels_size, color="black"),
+            textposition=mechanism_label_position,
+            hoverinfo="text",
+            hovertext=[mechanism_hovertext[i] for i in selected_mechanisms_indices],
+            hoverlabel=dict(bgcolor="black", font_color="white"),
+        )
+        fig.add_trace(selected_labels_mechanisms_trace)        
 
     # Make mechanism base
     i_base, j_base, k_base = all_triangles(len(xm))
@@ -1458,7 +1544,7 @@ def plot_ces_epicycles(
 
     # Make cause purview labels trace
     labels_cause_purviews_trace = go.Scatter3d(
-        visible=show_purview_labels,
+        visible=show_purview_labels if not intersect_mechanisms else 'legendonly',
         x=causes_x,
         y=causes_y,
         z=[n + (vertex_size_range[1] / 10 ** 3 + labels_z_offset) for n in causes_z],
@@ -1474,9 +1560,45 @@ def plot_ces_epicycles(
     )
     fig.add_trace(labels_cause_purviews_trace)
 
+    if intersect_mechanisms:
+        intersection_labels_cause_purviews_trace = go.Scatter3d(
+            visible=show_purview_labels,
+            x=[causes_x[i] for i in intersected_mechanisms_indices],
+            y=[causes_y[i] for i in intersected_mechanisms_indices],
+            z=[causes_z[i] + (vertex_size_range[1] / 10 ** 3 + labels_z_offset) for i in intersected_mechanisms_indices],
+            mode="text",
+            text=[cause_purview_labels[i] for i in intersected_mechanisms_indices],
+            textposition=purview_label_position,
+            name="Intersection Cause Purview Labels",
+            showlegend=True,
+            textfont=dict(size=purview_labels_size, color="red"),
+            hoverinfo="text",
+            hovertext=[causes_hovertext[i] for i in intersected_mechanisms_indices],
+            hoverlabel=dict(bgcolor="red"),
+        )
+        fig.add_trace(intersection_labels_cause_purviews_trace)
+
+    if selected_mechanism_qfolds:
+        selected_labels_cause_purviews_trace = go.Scatter3d(
+            visible=show_purview_labels,
+            x=[causes_x[i] for i in selected_mechanisms_indices],
+            y=[causes_y[i] for i in selected_mechanisms_indices],
+            z=[causes_z[i] + (vertex_size_range[1] / 10 ** 3 + labels_z_offset) for i in selected_mechanisms_indices],
+            mode="text",
+            text=[cause_purview_labels[i] for i in selected_mechanisms_indices],
+            textposition=purview_label_position,
+            name="Selected q-fold Cause Purview Labels",
+            showlegend=True,
+            textfont=dict(size=purview_labels_size, color="red"),
+            hoverinfo="text",
+            hovertext=[causes_hovertext[i] for i in selected_mechanisms_indices],
+            hoverlabel=dict(bgcolor="red"),
+        )
+        fig.add_trace(selected_labels_cause_purviews_trace)
+
     # Make effect purview labels trace
     labels_effect_purviews_trace = go.Scatter3d(
-        visible=show_purview_labels,
+        visible=show_purview_labels if not intersect_mechanisms else 'legendonly',
         x=effects_x,
         y=effects_y,
         z=[n + (vertex_size_range[1] / 10 ** 3 + labels_z_offset) for n in effects_z],
@@ -1487,10 +1609,46 @@ def plot_ces_epicycles(
         showlegend=True,
         textfont=dict(size=purview_labels_size, color="green"),
         hoverinfo="text",
-        hovertext=causes_hovertext,
+        hovertext=effects_hovertext,
         hoverlabel=dict(bgcolor="green"),
     )
     fig.add_trace(labels_effect_purviews_trace)
+
+    if intersect_mechanisms:
+        intersection_labels_effect_purviews_trace = go.Scatter3d(
+            visible=show_purview_labels,
+            x=[effects_x[i] for i in intersected_mechanisms_indices],
+            y=[effects_y[i] for i in intersected_mechanisms_indices],
+            z=[effects_z[i] + (vertex_size_range[1] / 10 ** 3 + labels_z_offset) for i in intersected_mechanisms_indices],
+            mode="text",
+            text=[effect_purview_labels[i] for i in intersected_mechanisms_indices],
+            textposition=purview_label_position,
+            name="Intersection Effect Purview Labels",
+            showlegend=True,
+        textfont=dict(size=purview_labels_size, color="green"),
+            hoverinfo="text",
+            hovertext=[effects_hovertext[i] for i in intersected_mechanisms_indices],
+            hoverlabel=dict(bgcolor="green"),
+        )
+        fig.add_trace(intersection_labels_effect_purviews_trace)
+
+    if selected_mechanism_qfolds:
+        selected_labels_effect_purviews_trace = go.Scatter3d(
+            visible=show_purview_labels,
+            x=[effects_x[i] for i in selected_mechanisms_indices],
+            y=[effects_y[i] for i in selected_mechanisms_indices],
+            z=[effects_z[i] + (vertex_size_range[1] / 10 ** 3 + labels_z_offset) for i in selected_mechanisms_indices],
+            mode="text",
+            text=[effect_purview_labels[i] for i in selected_mechanisms_indices],
+            textposition=purview_label_position,
+            name="Selected q-fold Effect Purview Labels",
+            showlegend=True,
+        textfont=dict(size=purview_labels_size, color="green"),
+            hoverinfo="text",
+            hovertext=[effects_hovertext[i] for i in selected_mechanisms_indices],
+            hoverlabel=dict(bgcolor="green"),
+        )
+        fig.add_trace(selected_labels_effect_purviews_trace)        
 
     # Make cause purviews state labels trace
     labels_cause_purviews_state_trace = go.Scatter3d(
@@ -1702,7 +1860,6 @@ def plot_ces_epicycles(
 
                 # Make nechanism contexts traces and legendgroups
                 if show_mechanism_qfolds:
-
                     legend_mechanisms = plot_mechanism_qfolds2D(
                         r,
                         relation,
@@ -1716,6 +1873,23 @@ def plot_ces_epicycles(
                         legend_mechanisms,
                         relation_color,
                     )
+
+                if selected_mechanism_qfolds:
+                    
+                    legend_mechanisms = plot_selected_mechanism_qfolds2D(
+                        r,
+                        relation,
+                        selected_mechanism_qfolds,
+                        show_edges,
+                        node_labels,
+                        go,
+                        fig,
+                        two_relations_coords,
+                        two_relations_sizes,
+                        legend_mechanisms,
+                        relation_color,
+                    )
+
 
                 # Make compound purview contexts traces and legendgroups
                 if show_compound_purview_qfolds:
@@ -1766,6 +1940,9 @@ def plot_ces_epicycles(
                         legend_mechanism_purviews,
                         relation_color,
                     )
+                
+                else:
+                    legend_mechanisms = []
 
                 # Make all 2-relations traces and legendgroup
                 edge_two_relation_trace = go.Scatter3d(
@@ -2062,7 +2239,7 @@ def plot_ces_epicycles(
             eye=dict(x=eye_coordinates[0], y=eye_coordinates[1], z=eye_coordinates[2])
         ),
         hovermode=hovermode,
-        title=f"{network_name} Q-STRUCTURE",
+        title=title,
         title_font_size=30,
         legend=dict(
             title=dict(
