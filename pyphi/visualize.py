@@ -1369,7 +1369,7 @@ def plot_ces_epicycles(
         selected_qfold_distinctions = sorted(sorted(list(set(selected_qfold_distinctions))),key=len)
 
         # selected_qfold_purviews = [mice.purview if mice.mechanism in selected_qfold_distinctions else None for mice in rel.separate_ces(ces)]        
-        selected_qfold_realpurviews = list(set(flatten([[mice for relation in selected_qfold_relations if mice in relation.relata] for mice in separated_ces])))
+        selected_qfold_mices = list(set(flatten([[mice for relation in selected_qfold_relations if mice in relation.relata] for mice in separated_ces])))
         # selected_qfold_causes = selected_qfold_purviews[::2]
         # selected_qfold_effects = selected_qfold_purviews[1::2]
     # purview_labels = list(map(label_purview, separated_ces))
@@ -1587,7 +1587,7 @@ def plot_ces_epicycles(
 
     # Make cause purview labels trace
     if selected_mechanism_qfolds:
-        selected_qfold_causes_indices = [i for i,purview in enumerate(separated_ces[::2]) if purview in selected_qfold_realpurviews]        
+        selected_qfold_causes_indices = [i for i,purview in enumerate(separated_ces[::2]) if purview in selected_qfold_mices]        
     
     labels_cause_purviews_trace = go.Scatter3d(
         visible=show_purview_labels if not intersect_mechanisms else 'legendonly',
@@ -1644,7 +1644,7 @@ def plot_ces_epicycles(
 
     # Make effect purview labels trace
     if selected_mechanism_qfolds:
-        selected_qfold_effects_indices = [i for i,purview in enumerate(separated_ces[1::2]) if purview in selected_qfold_realpurviews]        
+        selected_qfold_effects_indices = [i for i,purview in enumerate(separated_ces[1::2]) if purview in selected_qfold_mices]        
 
     labels_effect_purviews_trace = go.Scatter3d(
         visible=show_purview_labels if not intersect_mechanisms else 'legendonly',
@@ -1806,9 +1806,9 @@ def plot_ces_epicycles(
         links_widths = [composition_link_width for l in links_widths]
   
     if show_links:
-        for i, purview in enumerate(separated_ces):
+        for i, mice in enumerate(separated_ces):
             if selected_mechanism_qfolds:
-                if purview.mechanism in selected_qfold_distinctions:
+                if mice in selected_qfold_mices:
                     link_trace = go.Scatter3d(
                         visible=show_links,
                         legendgroup="Links",
@@ -1836,7 +1836,7 @@ def plot_ces_epicycles(
                     mode="lines",
                     name="Links",
                     line_width=links_widths[i],
-                    line_color=composition_color if composition or (integration_cut_elements and any([m in purview.mechanism for m in integration_cut_elements])) else "brown",
+                    line_color=composition_color if composition or (integration_cut_elements and any([m in mice.mechanism for m in integration_cut_elements])) else "brown",
                     hoverinfo="skip",
                     # hovertext=hovertext_relation(relation),
                 )
