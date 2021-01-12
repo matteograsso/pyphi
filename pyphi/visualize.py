@@ -432,11 +432,13 @@ def plot_node_qfolds2D(
     node_indices,
     node_labels,
     go,
+    fig,
     show_edges,
     legend_nodes,
     two_relations_coords,
     two_relations_sizes,
     relation_color,
+    relation_nodes,
 ):
 
     for node in node_indices:
@@ -469,9 +471,11 @@ def plot_node_qfolds3D(
     r,
     relation,
     show_mesh,
+    node_indices,
     node_labels,
     go,
     fig,
+    legend_nodes,
     legend_mechanisms,
     x,
     y,
@@ -480,6 +484,7 @@ def plot_node_qfolds3D(
     j,
     k,
     three_relations_sizes,
+    relation_nodes,
 ):
 
     for node in node_indices:
@@ -573,7 +578,7 @@ def plot_selected_mechanism_qfolds2D(
         if mechanism in relation.mechanisms:
 
             edge_two_relation_trace = go.Scatter3d(
-                visible=show_edges,
+                visible=True,
                 legendgroup=f"Mechanism {mechanism_label} q-fold",
                 showlegend=True if mechanism_label not in legend_mechanisms else False,
                 x=two_relations_coords[0][r],
@@ -666,7 +671,7 @@ def plot_selected_mechanism_qfolds3D(
         mechanism_label = make_label(mechanism, node_labels)
         if mechanism in relation.mechanisms:
             triangle_three_relation_trace = go.Mesh3d(
-                visible=show_mesh,
+                visible=True,
                 legendgroup=f"Selected Mechanism {mechanism_label} q-fold",
                 showlegend=True if mechanism_label not in legend_mechanisms or legend_mechanisms is None else False,
                 # x, y, and z are the coordinates of vertices
@@ -1191,6 +1196,7 @@ def plot_ces_epicycles(
     plot_bgcolor='white',
     composition=False,
     composition_color='black',
+    composition_edge_size=.5,
     composition_link_width=3,
     composition_surface_opacity=.05,
     composition_surface_intensity=.05,
@@ -1209,12 +1215,12 @@ def plot_ces_epicycles(
     img_background=False,
 ):
    
-    # if intersect_mechanisms or selected_mechanism_qfolds:
-    #     show_chains='legendonly'
-    #     show_chains_mesh='legendonly'
-    #     show_links='legendonly'
-    #     show_edges='legendonly'
-    #     show_mesh='legendonly'
+    if intersect_mechanisms or selected_mechanism_qfolds:
+        show_chains='legendonly'
+        show_chains_mesh='legendonly'
+        show_links='legendonly'
+        show_edges='legendonly'
+        show_mesh='legendonly'
 
     # Select only relations <= max_order
     relations = list(filter(lambda r: len(r.relata) <= max_order, relations))
@@ -1806,13 +1812,15 @@ def plot_ces_epicycles(
         links_widths = [composition_link_width for l in links_widths]
   
     if show_links:
+        selected_qfold_link_counter=0
         for i, mice in enumerate(separated_ces):
-            if selected_mechanism_qfolds:
+
+            if selected_mechanism_qfolds:                
                 if mice in selected_qfold_mices:
                     link_trace = go.Scatter3d(
-                        visible=show_links,
+                        visible=True,
                         legendgroup="Links",
-                        showlegend=True if i == 0 else False,
+                        showlegend=True if selected_qfold_link_counter == 0 else False,
                         x=coords_links[0][i],
                         y=coords_links[1][i],
                         z=coords_links[2][i],
@@ -1825,6 +1833,7 @@ def plot_ces_epicycles(
                 )
 
                     fig.add_trace(link_trace)
+                    selected_qfold_link_counter+=1
             else:
                 link_trace = go.Scatter3d(
                     visible=show_links,
@@ -1844,7 +1853,7 @@ def plot_ces_epicycles(
                 fig.add_trace(link_trace)
 
             # Make trace link for intersection only
-            if intersect_mechanisms and purview.mechanism in intersect_mechanisms:
+            if intersect_mechanisms and mice.mechanism in intersect_mechanisms:
                 intersection_link_trace = go.Scatter3d(
                     visible=True,
                     legendgroup="intersection links",
@@ -1919,11 +1928,13 @@ def plot_ces_epicycles(
                         node_indices,
                         node_labels,
                         go,
+                        fig,
                         show_edges,
                         legend_nodes,
                         two_relations_coords,
                         two_relations_sizes,
                         relation_color,
+                        relation_nodes,
                     )
 
                 # Make nechanism contexts traces and legendgroups
@@ -2014,7 +2025,7 @@ def plot_ces_epicycles(
 
                 # Make all 2-relations traces and legendgroup
                 edge_two_relation_trace = go.Scatter3d(
-                    visible=show_edges,
+                    visible='legendonly' if selected_mechanism_qfolds or intersect_mechanisms else show_edges,
                     legendgroup="All 2-Relations",
                     showlegend=True if r == 0 else False,
                     x=two_relations_coords[0][r],
@@ -2023,7 +2034,7 @@ def plot_ces_epicycles(
                     mode="lines",
                     # name=label_relation(relation),
                     name="All 2-Relations",
-                    line_width=two_relations_sizes[r],
+                    line_width=composition_edge_size if composition or (integration_cut_elements and any([m in flatten(relation.mechanisms) for m in integration_cut_elements])) else two_relations_sizes[r],
                     line_color=composition_color if composition or (integration_cut_elements and any([m in flatten(relation.mechanisms) for m in integration_cut_elements])) else relation_color,
                     hoverinfo="text",
                     hovertext=hovertext_relation(relation),
@@ -2085,10 +2096,12 @@ def plot_ces_epicycles(
                         r,
                         relation,
                         show_mesh,
+                        node_indices,
                         node_labels,
                         go,
                         fig,
                         legend_nodes,
+                        legend_mechanisms,
                         x,
                         y,
                         z,
@@ -2096,6 +2109,7 @@ def plot_ces_epicycles(
                         j,
                         k,
                         three_relations_sizes,
+                        relation_nodes,
                     )
 
                 if show_mechanism_qfolds:
@@ -2207,7 +2221,7 @@ def plot_ces_epicycles(
                     legend_mechanisms = []
 
                 triangle_three_relation_trace = go.Mesh3d(
-                    visible=show_mesh,
+                    visible='legendonly' if selected_mechanism_qfolds or intersect_mechanisms else show_mesh,
                     legendgroup="All 3-Relations",
                     showlegend=True if r == 0 else False,
                     # x, y, and z are the coordinates of vertices
