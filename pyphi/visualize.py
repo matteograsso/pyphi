@@ -1368,9 +1368,10 @@ def plot_ces_epicycles(
             selected_qfold_distinctions.extend(r.mechanisms)
         selected_qfold_distinctions = sorted(sorted(list(set(selected_qfold_distinctions))),key=len)
 
-        selected_qfold_purviews = [mice.purview if mice.mechanism in selected_qfold_distinctions else None for mice in rel.separate_ces(ces)]        
-        selected_qfold_causes = selected_qfold_purviews[::2]
-        selected_qfold_effects = selected_qfold_purviews[1::2]
+        # selected_qfold_purviews = [mice.purview if mice.mechanism in selected_qfold_distinctions else None for mice in rel.separate_ces(ces)]        
+        selected_qfold_realpurviews = list(set(flatten([[mice for relation in selected_qfold_relations if mice in relation.relata] for mice in separated_ces])))
+        # selected_qfold_causes = selected_qfold_purviews[::2]
+        # selected_qfold_effects = selected_qfold_purviews[1::2]
     # purview_labels = list(map(label_purview, separated_ces))
     purview_labels = [
         label_purview(mice, state=list(rel.maximal_state(mice)[0]))
@@ -1396,7 +1397,7 @@ def plot_ces_epicycles(
 
     # Make mechanism labels trace
     if selected_mechanism_qfolds:
-        selected_mechanism_qfold_text=[mechanism_state_labels[i] if mechanisms[i] in selected_qfold_distinctions else '' for i in range(len(mechanisms))]
+        selected_mechanism_qfold_text=[mechanism_labels[i] if mechanisms[i] in selected_qfold_distinctions else '' for i in range(len(mechanisms))]
     labels_mechanisms_trace = go.Scatter3d(
         visible= 'legendonly' if mechanisms_as_annotations or intersect_mechanisms else show_mechanism_labels,
         x=xm,
@@ -1586,15 +1587,15 @@ def plot_ces_epicycles(
 
     # Make cause purview labels trace
     if selected_mechanism_qfolds:
-        selected_qfold_causes_labels = [cause_purview_labels[i] if selected_qfold_causes[i] else '' for i in range(len(cause_purview_labels))]
+        selected_qfold_causes_indices = [i for i,purview in enumerate(separated_ces[::2]) if purview in selected_qfold_realpurviews]        
     
     labels_cause_purviews_trace = go.Scatter3d(
         visible=show_purview_labels if not intersect_mechanisms else 'legendonly',
-        x=causes_x,
-        y=causes_y,
-        z=[n + (vertex_size_range[1] / 10 ** 3 + labels_z_offset) for n in causes_z],
+        x=[causes_x[i] for i in selected_qfold_causes_indices] if selected_mechanism_qfolds else causes_x,
+        y=[causes_y[i] for i in selected_qfold_causes_indices] if selected_mechanism_qfolds else causes_y,
+        z=[causes_z[i] + (vertex_size_range[1] / 10 ** 3 + labels_z_offset) for i in selected_qfold_causes_indices] if selected_mechanism_qfolds else [n + (vertex_size_range[1] / 10 ** 3 + labels_z_offset) for n in causes_z],
         mode="text",
-        text=selected_qfold_causes_labels if selected_mechanism_qfolds else cause_purview_labels,
+        text=[cause_purview_labels[i] for i in selected_qfold_causes_indices] if selected_mechanism_qfolds else cause_purview_labels,
         textposition=purview_label_position,
         name="Cause Purview Labels",
         showlegend=True,
@@ -1643,15 +1644,15 @@ def plot_ces_epicycles(
 
     # Make effect purview labels trace
     if selected_mechanism_qfolds:
-        selected_qfold_effects_labels = [effect_purview_labels[i] if selected_qfold_effects[i] else '' for i in range(len(effect_purview_labels))]
+        selected_qfold_effects_indices = [i for i,purview in enumerate(separated_ces[1::2]) if purview in selected_qfold_realpurviews]        
 
     labels_effect_purviews_trace = go.Scatter3d(
         visible=show_purview_labels if not intersect_mechanisms else 'legendonly',
-        x=effects_x,
-        y=effects_y,
-        z=[n + (vertex_size_range[1] / 10 ** 3 + labels_z_offset) for n in effects_z],
+        x=[effects_x[i] for i in selected_qfold_effects_indices] if selected_mechanism_qfolds else effects_x,
+        y=[effects_y[i] for i in selected_qfold_effects_indices] if selected_mechanism_qfolds else effects_y,
+        z=[effects_z[i] + (vertex_size_range[1] / 10 ** 3 + labels_z_offset) for i in selected_qfold_effects_indices] if selected_mechanism_qfolds else [n + (vertex_size_range[1] / 10 ** 3 + labels_z_offset) for n in effects_z],
         mode="text",
-        text=selected_qfold_effects_labels if selected_mechanism_qfolds else effect_purview_labels,
+        text=[effect_purview_labels[i] for i in selected_qfold_effects_indices] if selected_mechanism_qfolds else effect_purview_labels,
         textposition=purview_label_position,
         name="Effect Purview Labels",
         showlegend=True,
@@ -1807,7 +1808,7 @@ def plot_ces_epicycles(
     if show_links:
         for i, purview in enumerate(separated_ces):
             if selected_mechanism_qfolds:
-                if purview.mechanism in selected_mechanism_qfolds:
+                if purview.mechanism in selected_qfold_distinctions:
                     link_trace = go.Scatter3d(
                         visible=show_links,
                         legendgroup="Links",
@@ -2292,16 +2293,20 @@ def plot_ces_epicycles(
 
     # Create figure
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    if show_image:
-        axes_range = [
-            (min(d) - 1, max(d) + 1)
-            for d in (x_im, y_im, np.append(z, zm))
-        ]
-    else:
-        axes_range = [
-            (min(d) - 1, max(d) + 1)
-            for d in (np.append(x, xm), np.append(y, ym), np.append(z, zm))
-        ]
+    # if show_image:
+    #     axes_range = [
+    #         (min(d) - 1, max(d) + 1)
+    #         for d in (x_im, y_im, np.append(z, zm))
+    #     ]
+    # else:
+    #     axes_range = [
+    #         (min(d) - 1, max(d) + 1)
+    #         for d in (np.append(x, xm), np.append(y, ym), np.append(z, zm))
+    #     ]
+    axes_range = [
+        (min(d) - 1, max(d) + 1)
+        for d in (np.append(x, xm), np.append(y, ym), np.append(z, zm))
+    ]    
 
     axes = [
         dict(
