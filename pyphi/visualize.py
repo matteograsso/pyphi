@@ -1161,7 +1161,7 @@ def plot_ces_epicycles(
     colorcode_2_relations=True,
     left_margin=get_screen_size()[0] / 10,
     floor_center=(0, 0),
-    floor_scale=2,
+    floor_scale=1,
     floor_scales=None,
     floor_angles=None,
     ground_floor_height=0,
