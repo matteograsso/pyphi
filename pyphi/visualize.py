@@ -1219,7 +1219,7 @@ def plot_ces_epicycles(
     distinctions_gone_mechanism_hoverlabel_color='blue',
 ):
    
-    if intersect_mechanisms or selected_mechanism_qfolds:
+    if intersect_mechanisms or selected_mechanism_qfolds or distinctions_gone or relations_gone:
         show_chains='legendonly'
         show_chains_mesh='legendonly'
         show_links='legendonly'
@@ -1525,6 +1525,22 @@ def plot_ces_epicycles(
                         hoverinfo="skip",
                         )
                     fig.add_trace(chains_trace)
+        # elif distinctions_gone and relations_gone:
+        #     for m,mechanism in chained_mechanisms:
+        #         if mechanism in distinctions_gone_mechanisms:
+        #             chains_trace = go.Scatter3d(
+        #                 visible=True,
+        #                 legendgroup="Chains",
+        #                 showlegend=True,# if m == 0 else False,
+        #                 x=chains_xs[m],
+        #                 y=chains_ys[m],
+        #                 z=chains_zs[m],
+        #                 mode="lines",
+        #                 name="Chains",
+        #                 line={'dash': chain_dash, 'color':chain_color,'width':chain_width},
+        #                 hoverinfo="skip",
+        #                 )
+        #             fig.add_trace(chains_trace)                    
         else:
             for m,mechanism in chained_mechanisms:
 
@@ -1660,6 +1676,24 @@ def plot_ces_epicycles(
             hoverlabel=dict(bgcolor="red"),
         )
         fig.add_trace(intersection_labels_cause_purviews_trace)
+
+    if distinctions_gone and relations_gone:
+        gone_labels_cause_purviews_trace = go.Scatter3d(
+            visible=show_purview_labels,
+            x=[causes_x[i] for i in distinctions_gone_indices],
+            y=[causes_y[i] for i in distinctions_gone_indices],
+            z=[causes_z[i] + (vertex_size_range[1] / 10 ** 3 + labels_z_offset) for i in distinctions_gone_indices],
+            mode="text",
+            text=[cause_purview_labels[i] for i in distinctions_gone_indices],
+            textposition=purview_label_position,
+            name="Lost Cause Purview Labels",
+            showlegend=True,
+            textfont=dict(size=purview_labels_size, color="red"),
+            hoverinfo="text",
+            hovertext=[causes_hovertext[i] for i in distinctions_gone_indices],
+            hoverlabel=dict(bgcolor="red"),
+        )
+        fig.add_trace(gone_labels_cause_purviews_trace)        
 
     # if selected_mechanism_qfolds:
     #     selected_labels_cause_purviews_trace = go.Scatter3d(
