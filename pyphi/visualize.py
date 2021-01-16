@@ -1591,25 +1591,25 @@ def plot_ces_epicycles(
         fig.add_trace(chains_mesh)
 
     # Make mechanism state labels trace
-    
-    labels_mechanisms_state_trace = go.Scatter3d(
-        visible=show_mechanism_state_labels,
-        x=xm,
-        y=ym,
-        z=[
-            n + (vertex_size_range[1] / 10 ** 3 + labels_z_offset + states_z_offset)
-            for n in zm
-        ],
-        mode="text",
-        text=mechanism_state_labels,
-        name="Mechanism State Labels",
-        showlegend=True,
-        textfont=dict(size=mechanism_state_labels_size, color="black"),
-        hoverinfo="text",
-        hovertext=mechanism_hovertext,
-        hoverlabel=dict(bgcolor="black", font_color="white"),
-    )
-    fig.add_trace(labels_mechanisms_state_trace)
+    if show_mechanism_state_labels:
+        labels_mechanisms_state_trace = go.Scatter3d(
+            visible=show_mechanism_state_labels,
+            x=xm,
+            y=ym,
+            z=[
+                n + (vertex_size_range[1] / 10 ** 3 + labels_z_offset + states_z_offset)
+                for n in zm
+            ],
+            mode="text",
+            text=mechanism_state_labels,
+            name="Mechanism State Labels",
+            showlegend=True,
+            textfont=dict(size=mechanism_state_labels_size, color="black"),
+            hoverinfo="text",
+            hovertext=mechanism_hovertext,
+            hoverlabel=dict(bgcolor="black", font_color="white"),
+        )
+        fig.add_trace(labels_mechanisms_state_trace)
 
     # Compute purview and mechanism marker sizes
     purview_sizes = normalize_sizes(
@@ -1788,44 +1788,46 @@ def plot_ces_epicycles(
         fig.add_trace(labels_effect_purviews_trace)     
 
     # Make cause purviews state labels trace
-    labels_cause_purviews_state_trace = go.Scatter3d(
-        visible=show_purview_state_labels,
-        x=causes_x,
-        y=causes_y,
-        z=[
-            n + (vertex_size_range[1] / 10 ** 3 + labels_z_offset + states_z_offset)
-            for n in causes_z
-        ],
-        mode="text",
-        text=cause_purview_state_labels,
-        name="Cause Purview State Labels",
-        showlegend=True,
-        textfont=dict(size=purview_state_labels_size, color="red"),
-        hoverinfo="text",
-        hovertext=causes_hovertext,
-        hoverlabel=dict(bgcolor="red"),
-    )
-    fig.add_trace(labels_cause_purviews_state_trace)
+    if show_purview_state_labels:
+        labels_cause_purviews_state_trace = go.Scatter3d(
+            visible=show_purview_state_labels,
+            x=causes_x,
+            y=causes_y,
+            z=[
+                n + (vertex_size_range[1] / 10 ** 3 + labels_z_offset + states_z_offset)
+                for n in causes_z
+            ],
+            mode="text",
+            text=cause_purview_state_labels,
+            name="Cause Purview State Labels",
+            showlegend=True,
+            textfont=dict(size=purview_state_labels_size, color="red"),
+            hoverinfo="text",
+            hovertext=causes_hovertext,
+            hoverlabel=dict(bgcolor="red"),
+        )
+        fig.add_trace(labels_cause_purviews_state_trace)
 
     # Make effect purviews state labels trace
-    labels_effect_purviews_state_trace = go.Scatter3d(
-        visible=show_purview_state_labels,
-        x=effects_x,
-        y=effects_y,
-        z=[
-            n + (vertex_size_range[1] / 10 ** 3 + labels_z_offset + states_z_offset)
-            for n in effects_z
-        ],
-        mode="text",
-        text=effect_purview_state_labels,
-        name="Effect Purview State Labels",
-        showlegend=True,
-        textfont=dict(size=purview_state_labels_size, color="green"),
-        hoverinfo="text",
-        hovertext=effects_hovertext,
-        hoverlabel=dict(bgcolor="green"),
-    )
-    fig.add_trace(labels_effect_purviews_state_trace)
+    if show_purview_state_labels:
+        labels_effect_purviews_state_trace = go.Scatter3d(
+            visible=show_purview_state_labels,
+            x=effects_x,
+            y=effects_y,
+            z=[
+                n + (vertex_size_range[1] / 10 ** 3 + labels_z_offset + states_z_offset)
+                for n in effects_z
+            ],
+            mode="text",
+            text=effect_purview_state_labels,
+            name="Effect Purview State Labels",
+            showlegend=True,
+            textfont=dict(size=purview_state_labels_size, color="green"),
+            hoverinfo="text",
+            hovertext=effects_hovertext,
+            hoverlabel=dict(bgcolor="green"),
+        )
+        fig.add_trace(labels_effect_purviews_state_trace)
 
     # Separating purview traces
 
