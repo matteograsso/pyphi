@@ -1213,6 +1213,10 @@ def plot_ces_epicycles(
     show_image = False,
     selected_mechanism_qfolds=None,
     img_background=False,
+    distinctions_gone=None,
+    relations_gone=None,
+    distinctions_gone_mechanism_color='blue',
+    distinctions_gone_mechanism_hoverlabel_color='blue',
 ):
    
     if intersect_mechanisms or selected_mechanism_qfolds:
@@ -1379,6 +1383,13 @@ def plot_ces_epicycles(
         # selected_qfold_causes = selected_qfold_purviews[::2]
         # selected_qfold_effects = selected_qfold_purviews[1::2]
     # purview_labels = list(map(label_purview, separated_ces))
+
+    if distinctions_gone and relations_gone:
+        distinctions_gone_indices = [i for i in range(len(ces)) if ces[i] in distinctions_gone]
+        distinctions_gone_mechanisms = [d.mechanism for d in distinctions_gone]
+        distinctions_gone_labels = [make_label(mechanism, node_labels=subsystem.node_labels, bold=False, state=False) for mechanism in distinctions_gone_mechanisms]        
+        distinctions_gone_mices = flatten([[d.cause,d.effect] for d in distinctions_gone])
+
     purview_labels = [
         label_purview(mice, state=list(rel.maximal_state(mice)[0]))
         for mice in separated_ces
@@ -1401,25 +1412,45 @@ def plot_ces_epicycles(
         vertices_hovertext
     )
 
-    # Make mechanism labels trace
-    if selected_mechanism_qfolds:
+    # Make selected mechanism labels trace
+    if selected_mechanism_qfolds:        
         selected_mechanism_qfold_text=[mechanism_labels[i] if mechanisms[i] in selected_qfold_distinctions else '' for i in range(len(mechanisms))]
-    labels_mechanisms_trace = go.Scatter3d(
-        visible= 'legendonly' if mechanisms_as_annotations or intersect_mechanisms else show_mechanism_labels,
-        x=xm,
-        y=ym,
-        z=[n + labels_z_offset + mechanism_z_offset for n in zm],
-        mode="text",
-        text=selected_mechanism_qfold_text if selected_mechanism_qfolds else mechanism_labels,
-        name="Mechanism Labels",
-        showlegend=True,
-        textfont=dict(size=mechanism_labels_size, color="black"),
-        textposition=mechanism_label_position,
-        hoverinfo="text",
-        hovertext=mechanism_hovertext,
-        hoverlabel=dict(bgcolor="black", font_color="white"),
-    )
-    fig.add_trace(labels_mechanisms_trace)
+        labels_mechanisms_trace = go.Scatter3d(
+            visible= 'legendonly' if mechanisms_as_annotations or intersect_mechanisms else show_mechanism_labels,
+            x=xm,
+            y=ym,
+            z=[n + labels_z_offset + mechanism_z_offset for n in zm],
+            mode="text",
+            text=selected_mechanism_qfold_text if selected_mechanism_qfolds else mechanism_labels,
+            name="Mechanism Labels",
+            showlegend=True,
+            textfont=dict(size=mechanism_labels_size, color="black"),
+            textposition=mechanism_label_position,
+            hoverinfo="text",
+            hovertext=mechanism_hovertext,
+            hoverlabel=dict(bgcolor="black", font_color="white"),
+        )
+        fig.add_trace(labels_mechanisms_trace)
+
+    # Make gone mechanism labels trace
+    if distinctions_gone and relations_gone:
+        distinctions_gone_text=[mechanism_labels[i] if mechanisms[i] in distinctions_gone_mechanisms else '' for i in range(len(mechanisms))]        
+        labels_mechanisms_trace = go.Scatter3d(
+            visible= 'legendonly' if mechanisms_as_annotations or intersect_mechanisms else show_mechanism_labels,
+            x=xm,
+            y=ym,
+            z=[n + labels_z_offset + mechanism_z_offset for n in zm],
+            mode="text",
+            text=distinctions_gone_text,
+            name="Lost Distinctions' Labels",
+            showlegend=True,
+            textfont=dict(size=mechanism_labels_size, color=distinctions_gone_mechanism_color),
+            textposition=mechanism_label_position,
+            hoverinfo="text",
+            hovertext=mechanism_hovertext,
+            hoverlabel=dict(bgcolor=distinctions_gone_mechanism_hoverlabel_color, font_color="white"),
+        )
+        fig.add_trace(labels_mechanisms_trace)
 
     #Make intersected mechanisms labels trace
     if intersect_mechanisms:
