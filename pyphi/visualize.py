@@ -1219,12 +1219,12 @@ def plot_ces_epicycles(
     distinctions_gone_mechanism_hoverlabel_color='blue',
 ):
    
-    if intersect_mechanisms or selected_mechanism_qfolds or distinctions_gone or relations_gone:
-        show_chains='legendonly'
-        show_chains_mesh='legendonly'
-        show_links='legendonly'
-        show_edges='legendonly'
-        show_mesh='legendonly'
+    # if intersect_mechanisms or selected_mechanism_qfolds or distinctions_gone or relations_gone:
+    #     show_chains='legendonly'
+    #     show_chains_mesh='legendonly'
+    #     show_links='legendonly'
+    #     show_edges='legendonly'
+    #     show_mesh='legendonly'
 
     # Select only relations <= max_order
     relations = list(filter(lambda r: len(r.relata) <= max_order, relations))
@@ -1642,24 +1642,24 @@ def plot_ces_epicycles(
     if selected_mechanism_qfolds:
         selected_qfold_causes_indices = [i for i,purview in enumerate(separated_ces[::2]) if purview in selected_qfold_mices]        
     
-    labels_cause_purviews_trace = go.Scatter3d(
-        visible=show_purview_labels if not intersect_mechanisms else 'legendonly',
-        x=[causes_x[i] for i in selected_qfold_causes_indices] if selected_mechanism_qfolds else causes_x,
-        y=[causes_y[i] for i in selected_qfold_causes_indices] if selected_mechanism_qfolds else causes_y,
-        z=[causes_z[i] + (vertex_size_range[1] / 10 ** 3 + labels_z_offset) for i in selected_qfold_causes_indices] if selected_mechanism_qfolds else [n + (vertex_size_range[1] / 10 ** 3 + labels_z_offset) for n in causes_z],
-        mode="text",
-        text=[cause_purview_labels[i] for i in selected_qfold_causes_indices] if selected_mechanism_qfolds else cause_purview_labels,
-        textposition=purview_label_position,
-        name="Cause Purview Labels",
-        showlegend=True,
-        textfont=dict(size=purview_labels_size, color="red"),
-        hoverinfo="text",
-        hovertext=causes_hovertext,
-        hoverlabel=dict(bgcolor="red"),
-    )
-    fig.add_trace(labels_cause_purviews_trace)
+        selected_mechanism_labels_cause_purviews_trace = go.Scatter3d(
+            visible=show_purview_labels,
+            x=[causes_x[i] for i in selected_qfold_causes_indices],
+            y=[causes_y[i] for i in selected_qfold_causes_indices],
+            z=[causes_z[i] + (vertex_size_range[1] / 10 ** 3 + labels_z_offset) for i in selected_qfold_causes_indices],
+            mode="text",
+            text=[cause_purview_labels[i] for i in selected_qfold_causes_indices],
+            textposition=purview_label_position,
+            name="Selected Mechanisms Cause Purview Labels",
+            showlegend=True,
+            textfont=dict(size=purview_labels_size, color="red"),
+            hoverinfo="text",
+            hovertext=causes_hovertext,
+            hoverlabel=dict(bgcolor="red"),
+        )
+        fig.add_trace(selected_mechanism_labels_cause_purviews_trace)
 
-    if intersect_mechanisms:
+    elif intersect_mechanisms:
         intersection_labels_cause_purviews_trace = go.Scatter3d(
             visible=show_purview_labels,
             x=[causes_x[i] for i in intersected_mechanisms_indices],
@@ -1677,7 +1677,7 @@ def plot_ces_epicycles(
         )
         fig.add_trace(intersection_labels_cause_purviews_trace)
 
-    if distinctions_gone and relations_gone:
+    elif distinctions_gone and relations_gone:
         gone_labels_cause_purviews_trace = go.Scatter3d(
             visible=show_purview_labels,
             x=[causes_x[i] for i in distinctions_gone_indices],
@@ -1712,6 +1712,23 @@ def plot_ces_epicycles(
     #         hoverlabel=dict(bgcolor="red"),
     #     )
     #     fig.add_trace(selected_labels_cause_purviews_trace)
+    else:
+        labels_cause_purviews_trace = go.Scatter3d(
+            visible=show_purview_labels,
+            x=causes_x,
+            y=causes_y,
+            z=[n + (vertex_size_range[1] / 10 ** 3 + labels_z_offset) for n in causes_z],
+            mode="text",
+            text=cause_purview_labels,
+            textposition=purview_label_position,
+            name="Cause Purview Labels",
+            showlegend=True,
+            textfont=dict(size=purview_labels_size, color="red"),
+            hoverinfo="text",
+            hovertext=causes_hovertext,
+            hoverlabel=dict(bgcolor="red"),
+        )
+        fig.add_trace(labels_cause_purviews_trace)
 
     # Make effect purview labels trace
     if selected_mechanism_qfolds:
