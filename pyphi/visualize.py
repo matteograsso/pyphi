@@ -1734,24 +1734,24 @@ def plot_ces_epicycles(
     if selected_mechanism_qfolds:
         selected_qfold_effects_indices = [i for i,purview in enumerate(separated_ces[1::2]) if purview in selected_qfold_mices]        
 
-    labels_effect_purviews_trace = go.Scatter3d(
-        visible=show_purview_labels if not intersect_mechanisms else 'legendonly',
-        x=[effects_x[i] for i in selected_qfold_effects_indices] if selected_mechanism_qfolds else effects_x,
-        y=[effects_y[i] for i in selected_qfold_effects_indices] if selected_mechanism_qfolds else effects_y,
-        z=[effects_z[i] + (vertex_size_range[1] / 10 ** 3 + labels_z_offset) for i in selected_qfold_effects_indices] if selected_mechanism_qfolds else [n + (vertex_size_range[1] / 10 ** 3 + labels_z_offset) for n in effects_z],
-        mode="text",
-        text=[effect_purview_labels[i] for i in selected_qfold_effects_indices] if selected_mechanism_qfolds else effect_purview_labels,
-        textposition=purview_label_position,
-        name="Effect Purview Labels",
-        showlegend=True,
-        textfont=dict(size=purview_labels_size, color="green"),
-        hoverinfo="text",
-        hovertext=effects_hovertext,
-        hoverlabel=dict(bgcolor="green"),
-    )
-    fig.add_trace(labels_effect_purviews_trace)
+        labels_effect_purviews_trace = go.Scatter3d(
+            visible=show_purview_labels,
+            x=[effects_x[i] for i in selected_qfold_effects_indices],
+            y=[effects_y[i] for i in selected_qfold_effects_indices],
+            z=[effects_z[i] + (vertex_size_range[1] / 10 ** 3 + labels_z_offset) for i in selected_qfold_effects_indices],
+            mode="text",
+            text=[effect_purview_labels[i] for i in selected_qfold_effects_indices],
+            textposition=purview_label_position,
+            name="Effect Purview Labels",
+            showlegend=True,
+            textfont=dict(size=purview_labels_size, color="green"),
+            hoverinfo="text",
+            hovertext=effects_hovertext,
+            hoverlabel=dict(bgcolor="green"),
+        )
+        fig.add_trace(labels_effect_purviews_trace)
 
-    if intersect_mechanisms:
+    elif intersect_mechanisms:
         intersection_labels_effect_purviews_trace = go.Scatter3d(
             visible=show_purview_labels,
             x=[effects_x[i] for i in intersected_mechanisms_indices],
@@ -1769,23 +1769,23 @@ def plot_ces_epicycles(
         )
         fig.add_trace(intersection_labels_effect_purviews_trace)
 
-    # if selected_mechanism_qfolds:
-    #     selected_labels_effect_purviews_trace = go.Scatter3d(
-    #         visible=show_purview_labels,
-    #         x=[effects_x[i] for i in selected_mechanisms_indices],
-    #         y=[effects_y[i] for i in selected_mechanisms_indices],
-    #         z=[effects_z[i] + (vertex_size_range[1] / 10 ** 3 + labels_z_offset) for i in selected_mechanisms_indices],
-    #         mode="text",
-    #         text=[effect_purview_labels[i] for i in selected_mechanisms_indices],
-    #         textposition=purview_label_position,
-    #         name="Selected q-fold Effect Purview Labels",
-    #         showlegend=True,
-    #     textfont=dict(size=purview_labels_size, color="green"),
-    #         hoverinfo="text",
-    #         hovertext=[effects_hovertext[i] for i in selected_mechanisms_indices],
-    #         hoverlabel=dict(bgcolor="green"),
-    #     )
-    #     fig.add_trace(selected_labels_effect_purviews_trace)        
+    else:
+        labels_effect_purviews_trace = go.Scatter3d(
+            visible=show_purview_labels,
+            x=effects_x,
+            y=effects_y,
+            z=[n + (vertex_size_range[1] / 10 ** 3 + labels_z_offset) for n in effects_z],
+            mode="text",
+            text=effect_purview_labels,
+            textposition=purview_label_position,
+            name="Effect Purview Labels",
+            showlegend=True,
+            textfont=dict(size=purview_labels_size, color="green"),
+            hoverinfo="text",
+            hovertext=effects_hovertext,
+            hoverlabel=dict(bgcolor="green"),
+        )
+        fig.add_trace(labels_effect_purviews_trace)     
 
     # Make cause purviews state labels trace
     labels_cause_purviews_state_trace = go.Scatter3d(
