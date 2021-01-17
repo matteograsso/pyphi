@@ -1433,7 +1433,7 @@ def plot_ces_epicycles(
         fig.add_trace(labels_mechanisms_trace)
 
     # Make gone mechanism labels trace
-    if distinctions_gone and relations_gone:
+    elif distinctions_gone and relations_gone:
         distinctions_gone_text=[mechanism_labels[i] if mechanisms[i] in distinctions_gone_mechanisms else '' for i in range(len(mechanisms))]        
         labels_mechanisms_trace = go.Scatter3d(
             visible= 'legendonly' if mechanisms_as_annotations or intersect_mechanisms else show_mechanism_labels,
@@ -1453,7 +1453,7 @@ def plot_ces_epicycles(
         fig.add_trace(labels_mechanisms_trace)
 
     #Make intersected mechanisms labels trace
-    if intersect_mechanisms:
+    elif intersect_mechanisms:
         intersected_labels_mechanisms_trace = go.Scatter3d(
             visible= show_mechanism_labels if not mechanisms_as_annotations else False,
             x=[xm[i] for i in intersected_mechanisms_indices],
@@ -1470,6 +1470,25 @@ def plot_ces_epicycles(
             hoverlabel=dict(bgcolor="black", font_color="white"),
         )
         fig.add_trace(intersected_labels_mechanisms_trace)   
+
+    #Make mechanisms labels trace
+    else:
+        labels_mechanisms_trace = go.Scatter3d(
+            visible=show_mechanism_labels,
+            x=xm,
+            y=ym,
+            z=[n + labels_z_offset + mechanism_z_offset for n in zm],
+            mode="text",
+            text=mechanism_labels,
+            name="Mechanism Labels",
+            showlegend=True,
+            textfont=dict(size=mechanism_labels_size, color="black"),
+            textposition=mechanism_label_position,
+            hoverinfo="text",
+            hovertext=mechanism_hovertext,
+            hoverlabel=dict(bgcolor="black", font_color="white"),
+        )
+        fig.add_trace(labels_mechanisms_trace)
 
     # Make mechanism base
     i_base, j_base, k_base = all_triangles(len(xm))
