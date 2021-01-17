@@ -1213,17 +1213,23 @@ def plot_ces_epicycles(
     show_image = False,
     selected_mechanism_qfolds=None,
     img_background=False,
-    distinctions_gone=None,
-    relations_gone=None,
-    distinctions_gone_mechanism_color='blue',
-    distinctions_gone_mechanism_hoverlabel_color='blue',
-    distinctions_gone_link_color='blue',
-    relations_gone_edge_color='blue',
-    relations_gone_surface_colorscale='blues',
+    distinctions_lost=None,
+    relations_lost=None,
+    distinctions_lost_mechanism_color='blue',
+    distinctions_lost_mechanism_hoverlabel_color='blue',
+    distinctions_lost_link_color='blue',
+    show_distinctions_remained_mechanisms=False,
+    distinctions_remained_mechanism_color='gray',
+    distinctions_remained_mechanism_hoverlabel_color='gray',
+    distinctions_remained_link_color='gray',    
+    relations_lost_edge_color='blue',
+    relations_lost_surface_colorscale='blues',
+    relations_remained_edge_color='gray',
+    relations_remained_surface_color='grays',
     
 ):
    
-    # if intersect_mechanisms or selected_mechanism_qfolds or distinctions_gone or relations_gone:
+    # if intersect_mechanisms or selected_mechanism_qfolds or distinctions_lost or relations_lost:
     #     show_chains='legendonly'
     #     show_chains_mesh='legendonly'
     #     show_links='legendonly'
@@ -1388,11 +1394,17 @@ def plot_ces_epicycles(
         # selected_qfold_effects = selected_qfold_purviews[1::2]
     # purview_labels = list(map(label_purview, separated_ces))
 
-    if distinctions_gone and relations_gone:
-        distinctions_gone_indices = [i for i in range(len(ces)) if ces[i] in distinctions_gone]
-        distinctions_gone_mechanisms = [d.mechanism for d in distinctions_gone]
-        distinctions_gone_labels = [make_label(mechanism, node_labels=subsystem.node_labels, bold=False, state=False) for mechanism in distinctions_gone_mechanisms]        
-        distinctions_gone_mices = flatten([[d.cause,d.effect] for d in distinctions_gone])
+    if distinctions_lost and relations_lost:
+        distinctions_lost_indices = [i for i in range(len(ces)) if ces[i] in distinctions_lost]
+        distinctions_lost_mechanisms = [d.mechanism for d in distinctions_lost]
+        distinctions_lost_labels = [make_label(mechanism, node_labels=subsystem.node_labels, bold=False, state=False) for mechanism in distinctions_lost_mechanisms]        
+        distinctions_lost_mices = flatten([[d.cause,d.effect] for d in distinctions_lost])
+        
+        distinctions_remained = [d for d in ces if d not in distinctions_lost]
+        distinctions_remained_indices = [i for i in range(len(ces)) if ces[i] in distinctions_remained]
+        distinctions_remained_mechanisms = [d.mechanism for d in distinctions_remained]
+        distinctions_remained_labels = [make_label(mechanism, node_labels=subsystem.node_labels, bold=False, state=False) for mechanism in distinctions_remained_mechanisms]        
+        distinctions_remained_mices = flatten([[d.cause,d.effect] for d in distinctions_remained])
 
     purview_labels = [
         label_purview(mice, state=list(rel.maximal_state(mice)[0]))
@@ -1436,25 +1448,44 @@ def plot_ces_epicycles(
         )
         fig.add_trace(labels_mechanisms_trace)
 
-    # Make gone mechanism labels trace
-    elif distinctions_gone and relations_gone:
-        distinctions_gone_text=[mechanism_labels[i] if mechanisms[i] in distinctions_gone_mechanisms else '' for i in range(len(mechanisms))]        
+    # Make lost mechanism labels trace
+    elif distinctions_lost and relations_lost:
+        distinctions_lost_text=[mechanism_labels[i] if mechanisms[i] in distinctions_lost_mechanisms else '' for i in range(len(mechanisms))]        
         labels_mechanisms_trace = go.Scatter3d(
-            visible= 'legendonly' if mechanisms_as_annotations or intersect_mechanisms else show_mechanism_labels,
+            visible=show_mechanism_labels,
             x=xm,
             y=ym,
             z=[n + labels_z_offset + mechanism_z_offset for n in zm],
             mode="text",
-            text=distinctions_gone_text,
+            text=distinctions_lost_text,
             name="Lost Distinctions",
             showlegend=True,
-            textfont=dict(size=mechanism_labels_size, color=distinctions_gone_mechanism_color),
+            textfont=dict(size=mechanism_labels_size, color=distinctions_lost_mechanism_color),
             textposition=mechanism_label_position,
             hoverinfo="text",
             hovertext=mechanism_hovertext,
-            hoverlabel=dict(bgcolor=distinctions_gone_mechanism_hoverlabel_color, font_color="white"),
+            hoverlabel=dict(bgcolor=distinctions_lost_mechanism_hoverlabel_color, font_color="white"),
         )
         fig.add_trace(labels_mechanisms_trace)
+
+        distinctions_remained_text=[mechanism_labels[i] if mechanisms[i] in distinctions_remained_mechanisms else '' for i in range(len(mechanisms))]        
+        if show_distinctions_remained_mechanisms:
+            labels_mechanisms_trace = go.Scatter3d(
+                visible=show_mechanism_labels,
+                x=xm,
+                y=ym,
+                z=[n + labels_z_offset + mechanism_z_offset for n in zm],
+                mode="text",
+                text=distinctions_remained_text,
+                name="Remained Distinctions",
+                showlegend=True,
+                textfont=dict(size=mechanism_labels_size, color=distinctions_remained_mechanism_color),
+                textposition=mechanism_label_position,
+                hoverinfo="text",
+                hovertext=mechanism_hovertext,
+                hoverlabel=dict(bgcolor=distinctions_remained_mechanism_hoverlabel_color, font_color="white"),
+            )
+            fig.add_trace(labels_mechanisms_trace)
 
     #Make intersected mechanisms labels trace
     elif intersect_mechanisms:
@@ -1548,9 +1579,9 @@ def plot_ces_epicycles(
                         hoverinfo="skip",
                         )
                     fig.add_trace(chains_trace)
-        # elif distinctions_gone and relations_gone:
+        # elif distinctions_lost and relations_lost:
         #     for m,mechanism in chained_mechanisms:
-        #         if mechanism in distinctions_gone_mechanisms:
+        #         if mechanism in distinctions_lost_mechanisms:
         #             chains_trace = go.Scatter3d(
         #                 visible=True,
         #                 legendgroup="Chains",
@@ -1700,23 +1731,23 @@ def plot_ces_epicycles(
         )
         fig.add_trace(intersection_labels_cause_purviews_trace)
 
-    elif distinctions_gone and relations_gone:
-        gone_labels_cause_purviews_trace = go.Scatter3d(
+    elif distinctions_lost and relations_lost:
+        lost_labels_cause_purviews_trace = go.Scatter3d(
             visible=show_purview_labels,
-            x=[causes_x[i] for i in distinctions_gone_indices],
-            y=[causes_y[i] for i in distinctions_gone_indices],
-            z=[causes_z[i] + (vertex_size_range[1] / 10 ** 3 + labels_z_offset) for i in distinctions_gone_indices],
+            x=[causes_x[i] for i in distinctions_lost_indices],
+            y=[causes_y[i] for i in distinctions_lost_indices],
+            z=[causes_z[i] + (vertex_size_range[1] / 10 ** 3 + labels_z_offset) for i in distinctions_lost_indices],
             mode="text",
-            text=[cause_purview_labels[i] for i in distinctions_gone_indices],
+            text=[cause_purview_labels[i] for i in distinctions_lost_indices],
             textposition=purview_label_position,
             name="Lost Cause Purviews",
             showlegend=True,
             textfont=dict(size=purview_labels_size, color="red"),
             hoverinfo="text",
-            hovertext=[causes_hovertext[i] for i in distinctions_gone_indices],
+            hovertext=[causes_hovertext[i] for i in distinctions_lost_indices],
             hoverlabel=dict(bgcolor="red"),
         )
-        fig.add_trace(gone_labels_cause_purviews_trace)        
+        fig.add_trace(lost_labels_cause_purviews_trace)        
 
     else:
         labels_cause_purviews_trace = go.Scatter3d(
@@ -1775,23 +1806,23 @@ def plot_ces_epicycles(
         )
         fig.add_trace(intersection_labels_effect_purviews_trace)
 
-    elif distinctions_gone and relations_gone:
-        gone_labels_effect_purviews_trace = go.Scatter3d(
+    elif distinctions_lost and relations_lost:
+        lost_labels_effect_purviews_trace = go.Scatter3d(
             visible=show_purview_labels,
-            x=[effects_x[i] for i in distinctions_gone_indices],
-            y=[effects_y[i] for i in distinctions_gone_indices],
-            z=[effects_z[i] + (vertex_size_range[1] / 10 ** 3 + labels_z_offset) for i in distinctions_gone_indices],
+            x=[effects_x[i] for i in distinctions_lost_indices],
+            y=[effects_y[i] for i in distinctions_lost_indices],
+            z=[effects_z[i] + (vertex_size_range[1] / 10 ** 3 + labels_z_offset) for i in distinctions_lost_indices],
             mode="text",
-            text=[effect_purview_labels[i] for i in distinctions_gone_indices],
+            text=[effect_purview_labels[i] for i in distinctions_lost_indices],
             textposition=purview_label_position,
             name="Lost Effect Purviews",
             showlegend=True,
             textfont=dict(size=purview_labels_size, color="green"),
             hoverinfo="text",
-            hovertext=[effects_hovertext[i] for i in distinctions_gone_indices],
+            hovertext=[effects_hovertext[i] for i in distinctions_lost_indices],
             hoverlabel=dict(bgcolor="green"),
         )
-        fig.add_trace(gone_labels_effect_purviews_trace)        
+        fig.add_trace(lost_labels_effect_purviews_trace)        
 
     else:
         labels_effect_purviews_trace = go.Scatter3d(
@@ -1905,8 +1936,10 @@ def plot_ces_epicycles(
     intersection_2_relations_counter = 0
     intersection_3_relations_counter = 0
     intersection_links_counter = 0
-    gone_2_relations_counter=0
-    gone_3_relations_counter=0
+    lost_2_relations_counter=0
+    lost_3_relations_counter=0
+    remained_2_relations_counter=0
+    remained_3_relations_counter=0
 
     # Plot distinction links (edge connecting cause, mechanism, effect vertices)
     coords_links = (
@@ -1924,7 +1957,7 @@ def plot_ces_epicycles(
   
     if show_links:
         selected_qfold_links_counter=0
-        gone_links_counter=0
+        lost_links_counter=0
         links_counter=0
         for i, mice in enumerate(separated_ces):
 
@@ -1967,24 +2000,24 @@ def plot_ces_epicycles(
                 intersection_links_counter += 1
                 fig.add_trace(intersection_link_trace)
 
-            elif distinctions_gone and relations_gone:
-                if mice.mechanism in distinctions_gone_mechanisms:
-                    gone_link_trace = go.Scatter3d(
+            elif distinctions_lost and relations_lost:
+                if mice.mechanism in distinctions_lost_mechanisms:
+                    lost_link_trace = go.Scatter3d(
                         visible=True,
                         legendgroup="Lost Links",
-                        showlegend=True if gone_links_counter == 0 else False,
+                        showlegend=True if lost_links_counter == 0 else False,
                         x=coords_links[0][i],
                         y=coords_links[1][i],
                         z=coords_links[2][i],
                         mode="lines",
                         name="Lost Links",
                         line_width=links_widths[i],
-                        line_color=distinctions_gone_link_color,
+                        line_color=distinctions_lost_link_color,
                         hoverinfo="skip",
                         # hovertext=hovertext_relation(relation),
                     )
-                    gone_links_counter += 1
-                    fig.add_trace(gone_link_trace)
+                    lost_links_counter += 1
+                    fig.add_trace(lost_link_trace)
 
             else:
                 link_trace = go.Scatter3d(
@@ -2181,14 +2214,14 @@ def plot_ces_epicycles(
 
                         fig.add_trace(intersection_two_relation_trace)
 
-                if distinctions_gone and relations_gone:
+                if distinctions_lost and relations_lost:
 
-                    if relation in relations_gone:
+                    if relation in relations_lost:
      
                         lost_two_relation_trace = go.Scatter3d(
                             visible=True,
                             legendgroup="Lost 2-Relations",
-                            showlegend=True if gone_2_relations_counter == 0 else False,
+                            showlegend=True if lost_2_relations_counter == 0 else False,
                             x=two_relations_coords[0][r],
                             y=two_relations_coords[1][r],
                             z=two_relations_coords[2][r],
@@ -2196,18 +2229,37 @@ def plot_ces_epicycles(
                             # name=label_relation(relation),
                             name="Lost 2-Relations",
                             line_width=two_relations_sizes[r],
-                            line_color=relations_gone_edge_color,
+                            line_color=relations_lost_edge_color,
                             hoverinfo="text",
                             hovertext=hovertext_relation(relation),
                         )
-                        gone_2_relations_counter += 1
+                        lost_2_relations_counter += 1
 
-                        fig.add_trace(lost_two_relation_trace)        
+                        fig.add_trace(lost_two_relation_trace)
+                    else:        
+                        remained_two_relation_trace = go.Scatter3d(
+                            visible=True,
+                            legendgroup="Remained 2-Relations",
+                            showlegend=True if remained_2_relations_counter == 0 else False,
+                            x=two_relations_coords[0][r],
+                            y=two_relations_coords[1][r],
+                            z=two_relations_coords[2][r],
+                            mode="lines",
+                            # name=label_relation(relation),
+                            name="Remained 2-Relations",
+                            line_width=two_relations_sizes[r],
+                            line_color=relations_remained_edge_color,
+                            hoverinfo="text",
+                            hovertext=hovertext_relation(relation),
+                        )
+                        remained_2_relations_counter += 1
+
+                        fig.add_trace(remained_two_relation_trace)
 
                 
                 # Make all 2-relations traces and legendgroup
                 edge_two_relation_trace = go.Scatter3d(
-                    visible='legendonly' if selected_mechanism_qfolds or intersect_mechanisms or distinctions_gone else show_edges,
+                    visible='legendonly' if selected_mechanism_qfolds or intersect_mechanisms or distinctions_lost else show_edges,
                     legendgroup="All 2-Relations",
                     showlegend=True if r == 0 else False,
                     x=two_relations_coords[0][r],
@@ -2407,14 +2459,14 @@ def plot_ces_epicycles(
 
                         fig.add_trace(intersection_three_relation_trace)
 
-                if distinctions_gone and relations_gone:
+                if distinctions_lost and relations_lost:
 
-                    if relation in relations_gone:
+                    if relation in relations_lost:
      
                         lost_three_relation_trace = go.Mesh3d(
                             visible=True,
                             legendgroup="Lost 3-Relations",
-                            showlegend=True if gone_3_relations_counter == 0 else False,
+                            showlegend=True if lost_3_relations_counter == 0 else False,
                             # x, y, and z are the coordinates of vertices
                             x=x,
                             y=y,
@@ -2425,19 +2477,40 @@ def plot_ces_epicycles(
                             k=[k[r]],
                             intensity=np.linspace(0, 1, len(x), endpoint=True),
                             opacity=three_relations_sizes[r],
-                            colorscale=relations_gone_surface_colorscale,
+                            colorscale=relations_lost_surface_colorscale,
                             showscale=False,
                             name="Lost 3-Relations",
                             hoverinfo="text",
                             hovertext=hovertext_relation(relation),
                         )
+                    else:
+                        remained_three_relation_trace = go.Mesh3d(
+                            visible=True,
+                            legendgroup="Remained 3-Relations",
+                            showlegend=True if remained_3_relations_counter == 0 else False,
+                            # x, y, and z are the coordinates of vertices
+                            x=x,
+                            y=y,
+                            z=z,
+                            # i, j, and k are the vertices of triangles
+                            i=[i[r]],
+                            j=[j[r]],
+                            k=[k[r]],
+                            intensity=np.linspace(0, 1, len(x), endpoint=True),
+                            opacity=three_relations_sizes[r],
+                            colorscale=relations_remained_surface_color,
+                            showscale=False,
+                            name="Remained 3-Relations",
+                            hoverinfo="text",
+                            hovertext=hovertext_relation(relation),
+                        )                        
 
-                        gone_3_relations_counter += 1
+                        remained_3_relations_counter += 1
 
-                        fig.add_trace(lost_three_relation_trace)                        
+                        fig.add_trace(remained_three_relation_trace)                        
 
                 triangle_three_relation_trace = go.Mesh3d(
-                    visible='legendonly' if selected_mechanism_qfolds or intersect_mechanisms or distinctions_gone else show_mesh,
+                    visible='legendonly' if selected_mechanism_qfolds or intersect_mechanisms or distinctions_lost else show_mesh,
                     legendgroup="All 3-Relations",
                     showlegend=True if r == 0 else False,
                     # x, y, and z are the coordinates of vertices
