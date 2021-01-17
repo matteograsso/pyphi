@@ -1773,6 +1773,24 @@ def plot_ces_epicycles(
         )
         fig.add_trace(intersection_labels_effect_purviews_trace)
 
+    elif distinctions_gone and relations_gone:
+        gone_labels_effect_purviews_trace = go.Scatter3d(
+            visible=show_purview_labels,
+            x=[effects_x[i] for i in distinctions_gone_indices],
+            y=[effects_y[i] for i in distinctions_gone_indices],
+            z=[effects_z[i] + (vertex_size_range[1] / 10 ** 3 + labels_z_offset) for i in distinctions_gone_indices],
+            mode="text",
+            text=[effect_purview_labels[i] for i in distinctions_gone_indices],
+            textposition=purview_label_position,
+            name="Lost Effect Purviews",
+            showlegend=True,
+            textfont=dict(size=purview_labels_size, color="green"),
+            hoverinfo="text",
+            hovertext=[effects_hovertext[i] for i in distinctions_gone_indices],
+            hoverlabel=dict(bgcolor="green"),
+        )
+        fig.add_trace(gone_labels_effect_purviews_trace)        
+
     else:
         labels_effect_purviews_trace = go.Scatter3d(
             visible=show_purview_labels,
