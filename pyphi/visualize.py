@@ -1444,7 +1444,7 @@ def plot_ces_epicycles(
             z=[n + labels_z_offset + mechanism_z_offset for n in zm],
             mode="text",
             text=distinctions_gone_text,
-            name="Lost Distinctions' Labels",
+            name="Lost Distinctions",
             showlegend=True,
             textfont=dict(size=mechanism_labels_size, color=distinctions_gone_mechanism_color),
             textposition=mechanism_label_position,
@@ -1707,7 +1707,7 @@ def plot_ces_epicycles(
             mode="text",
             text=[cause_purview_labels[i] for i in distinctions_gone_indices],
             textposition=purview_label_position,
-            name="Lost Cause Purview Labels",
+            name="Lost Cause Purviews",
             showlegend=True,
             textfont=dict(size=purview_labels_size, color="red"),
             hoverinfo="text",
@@ -1716,23 +1716,6 @@ def plot_ces_epicycles(
         )
         fig.add_trace(gone_labels_cause_purviews_trace)        
 
-    # if selected_mechanism_qfolds:
-    #     selected_labels_cause_purviews_trace = go.Scatter3d(
-    #         visible=show_purview_labels,
-    #         x=[causes_x[i] for i in selected_mechanisms_indices],
-    #         y=[causes_y[i] for i in selected_mechanisms_indices],
-    #         z=[causes_z[i] + (vertex_size_range[1] / 10 ** 3 + labels_z_offset) for i in selected_mechanisms_indices],
-    #         mode="text",
-    #         text=[cause_purview_labels[i] for i in selected_mechanisms_indices],
-    #         textposition=purview_label_position,
-    #         name="Selected q-fold Cause Purview Labels",
-    #         showlegend=True,
-    #         textfont=dict(size=purview_labels_size, color="red"),
-    #         hoverinfo="text",
-    #         hovertext=[causes_hovertext[i] for i in selected_mechanisms_indices],
-    #         hoverlabel=dict(bgcolor="red"),
-    #     )
-    #     fig.add_trace(selected_labels_cause_purviews_trace)
     else:
         labels_cause_purviews_trace = go.Scatter3d(
             visible=show_purview_labels,
@@ -1967,13 +1950,13 @@ def plot_ces_epicycles(
                 if mice.mechanism in distinctions_gone_mechanisms:
                     gone_link_trace = go.Scatter3d(
                         visible=True,
-                        legendgroup="Lost Distinctions Links",
+                        legendgroup="Lost Links",
                         showlegend=True if gone_links_counter == 0 else False,
                         x=coords_links[0][i],
                         y=coords_links[1][i],
                         z=coords_links[2][i],
                         mode="lines",
-                        name="Lost Distinctions Links",
+                        name="Lost Links",
                         line_width=links_widths[i],
                         line_color=distinctions_gone_link_color,
                         hoverinfo="skip",
@@ -2190,7 +2173,7 @@ def plot_ces_epicycles(
                             z=two_relations_coords[2][r],
                             mode="lines",
                             # name=label_relation(relation),
-                            name="Gone 2-Relations",
+                            name="Lost 2-Relations",
                             line_width=two_relations_sizes[r],
                             line_color=relations_gone_edge_color,
                             hoverinfo="text",
