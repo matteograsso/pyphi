@@ -1219,6 +1219,8 @@ def plot_ces_epicycles(
     distinctions_gone_mechanism_hoverlabel_color='blue',
     distinctions_gone_link_color='blue',
     relations_gone_edge_color='blue',
+    relations_gone_surface_colorscale='blues',
+    
 ):
    
     # if intersect_mechanisms or selected_mechanism_qfolds or distinctions_gone or relations_gone:
@@ -1904,6 +1906,7 @@ def plot_ces_epicycles(
     intersection_3_relations_counter = 0
     intersection_links_counter = 0
     gone_2_relations_counter=0
+    gone_3_relations_counter=0
 
     # Plot distinction links (edge connecting cause, mechanism, effect vertices)
     coords_links = (
@@ -2182,7 +2185,7 @@ def plot_ces_epicycles(
 
                     if relation in relations_gone:
      
-                        gone_two_relation_trace = go.Scatter3d(
+                        lost_two_relation_trace = go.Scatter3d(
                             visible=True,
                             legendgroup="Lost 2-Relations",
                             showlegend=True if gone_2_relations_counter == 0 else False,
@@ -2199,12 +2202,12 @@ def plot_ces_epicycles(
                         )
                         gone_2_relations_counter += 1
 
-                        fig.add_trace(gone_two_relation_trace)        
+                        fig.add_trace(lost_two_relation_trace)        
 
                 
                 # Make all 2-relations traces and legendgroup
                 edge_two_relation_trace = go.Scatter3d(
-                    visible='legendonly' if selected_mechanism_qfolds or intersect_mechanisms else show_edges,
+                    visible='legendonly' if selected_mechanism_qfolds or intersect_mechanisms or distinctions_gone else show_edges,
                     legendgroup="All 2-Relations",
                     showlegend=True if r == 0 else False,
                     x=two_relations_coords[0][r],
@@ -2374,29 +2377,6 @@ def plot_ces_epicycles(
                 else:
                     legend_mechanisms = []
 
-                triangle_three_relation_trace = go.Mesh3d(
-                    visible='legendonly' if selected_mechanism_qfolds or intersect_mechanisms else show_mesh,
-                    legendgroup="All 3-Relations",
-                    showlegend=True if r == 0 else False,
-                    # x, y, and z are the coordinates of vertices
-                    x=x,
-                    y=y,
-                    z=z,
-                    # i, j, and k are the vertices of triangles
-                    i=[i[r]],
-                    j=[j[r]],
-                    k=[k[r]],
-                    # Intensity of each vertex, which will be interpolated and color-coded
-                    intensity=[composition_surface_intensity for x in range(len(x))] if composition or (integration_cut_elements and any([m in flatten(relation.mechanisms) for m in integration_cut_elements])) else np.linspace(0, 1, len(x), endpoint=True),
-                    opacity=composition_surface_opacity if composition or (integration_cut_elements and any([m in flatten(relation.mechanisms) for m in integration_cut_elements])) else three_relations_sizes[r],
-                    colorscale="Greys" if composition or (integration_cut_elements and any([m in flatten(relation.mechanisms) for m in integration_cut_elements])) else "viridis",
-                    showscale=False,
-                    name="All 3-Relations",
-                    hoverinfo="text",
-                    hovertext=hovertext_relation(relation),
-                )
-                fig.add_trace(triangle_three_relation_trace)
-
                 #Make intersection 3-relations traces and legendgroup
                 if intersect_mechanisms:
 
@@ -2426,6 +2406,58 @@ def plot_ces_epicycles(
                         intersection_3_relations_counter += 1
 
                         fig.add_trace(intersection_three_relation_trace)
+
+                if distinctions_gone and relations_gone:
+
+                    if relation in relations_gone:
+     
+                        lost_three_relation_trace = go.Mesh3d(
+                            visible=True,
+                            legendgroup="Lost 3-Relations",
+                            showlegend=True if gone_3_relations_counter == 0 else False,
+                            # x, y, and z are the coordinates of vertices
+                            x=x,
+                            y=y,
+                            z=z,
+                            # i, j, and k are the vertices of triangles
+                            i=[i[r]],
+                            j=[j[r]],
+                            k=[k[r]],
+                            intensity=np.linspace(0, 1, len(x), endpoint=True),
+                            opacity=three_relations_sizes[r],
+                            colorscale=relations_gone_surface_colorscale,
+                            showscale=False,
+                            name="Lost 3-Relations",
+                            hoverinfo="text",
+                            hovertext=hovertext_relation(relation),
+                        )
+
+                        gone_3_relations_counter += 1
+
+                        fig.add_trace(lost_three_relation_trace)                        
+
+                triangle_three_relation_trace = go.Mesh3d(
+                    visible='legendonly' if selected_mechanism_qfolds or intersect_mechanisms or distinctions_gone else show_mesh,
+                    legendgroup="All 3-Relations",
+                    showlegend=True if r == 0 else False,
+                    # x, y, and z are the coordinates of vertices
+                    x=x,
+                    y=y,
+                    z=z,
+                    # i, j, and k are the vertices of triangles
+                    i=[i[r]],
+                    j=[j[r]],
+                    k=[k[r]],
+                    # Intensity of each vertex, which will be interpolated and color-coded
+                    intensity=[composition_surface_intensity for x in range(len(x))] if composition or (integration_cut_elements and any([m in flatten(relation.mechanisms) for m in integration_cut_elements])) else np.linspace(0, 1, len(x), endpoint=True),
+                    opacity=composition_surface_opacity if composition or (integration_cut_elements and any([m in flatten(relation.mechanisms) for m in integration_cut_elements])) else three_relations_sizes[r],
+                    colorscale="Greys" if composition or (integration_cut_elements and any([m in flatten(relation.mechanisms) for m in integration_cut_elements])) else "viridis",
+                    showscale=False,
+                    name="All 3-Relations",
+                    hoverinfo="text",
+                    hovertext=hovertext_relation(relation),
+                )
+                fig.add_trace(triangle_three_relation_trace)        
 
     
     # Add image to xy-plane
