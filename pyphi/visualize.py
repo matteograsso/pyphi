@@ -1218,6 +1218,7 @@ def plot_ces_epicycles(
     distinctions_gone_mechanism_color='blue',
     distinctions_gone_mechanism_hoverlabel_color='blue',
     distinctions_gone_link_color='blue',
+    relations_gone_edge_color='blue',
 ):
    
     # if intersect_mechanisms or selected_mechanism_qfolds or distinctions_gone or relations_gone:
@@ -1897,10 +1898,12 @@ def plot_ces_epicycles(
     legend_mechanism_purviews = []
     legend_intersection = []
 
-    #intersectionCount = 0  # A flag and a counter for the times there is a check for intersection and it is found.
+    # Counters for trace legend items.
     intersection_2_relations_counter = 0
     intersection_3_relations_counter = 0
     intersection_links_counter = 0
+    gone_2_relations_counter=0
+
     # Plot distinction links (edge connecting cause, mechanism, effect vertices)
     coords_links = (
         list(zip(x, flatten(list(zip(xm, xm))))),
@@ -2147,24 +2150,7 @@ def plot_ces_epicycles(
                 else:
                     legend_mechanisms = []
 
-                # Make all 2-relations traces and legendgroup
-                edge_two_relation_trace = go.Scatter3d(
-                    visible='legendonly' if selected_mechanism_qfolds or intersect_mechanisms else show_edges,
-                    legendgroup="All 2-Relations",
-                    showlegend=True if r == 0 else False,
-                    x=two_relations_coords[0][r],
-                    y=two_relations_coords[1][r],
-                    z=two_relations_coords[2][r],
-                    mode="lines",
-                    # name=label_relation(relation),
-                    name="All 2-Relations",
-                    line_width=composition_edge_size if composition or (integration_cut_elements and any([m in flatten(relation.mechanisms) for m in integration_cut_elements])) else two_relations_sizes[r],
-                    line_color=composition_color if composition or (integration_cut_elements and any([m in flatten(relation.mechanisms) for m in integration_cut_elements])) else relation_color,
-                    hoverinfo="text",
-                    hovertext=hovertext_relation(relation),
-                )
-
-                fig.add_trace(edge_two_relation_trace)
+                
 
                 #Make intersection 2-relations traces and legendgroup
                 if intersect_mechanisms:
@@ -2190,6 +2176,49 @@ def plot_ces_epicycles(
                         intersection_2_relations_counter += 1
 
                         fig.add_trace(intersection_two_relation_trace)
+
+                if distinctions_gone and relations_gone:
+
+                    if relation in relations_gone:
+     
+                        gone_two_relation_trace = go.Scatter3d(
+                            visible=True,
+                            legendgroup="Lost 2-Relations",
+                            showlegend=True if gone_2_relations_counter == 0 else False,
+                            x=two_relations_coords[0][r],
+                            y=two_relations_coords[1][r],
+                            z=two_relations_coords[2][r],
+                            mode="lines",
+                            # name=label_relation(relation),
+                            name="Gone 2-Relations",
+                            line_width=two_relations_sizes[r],
+                            line_color=relations_gone_edge_color,
+                            hoverinfo="text",
+                            hovertext=hovertext_relation(relation),
+                        )
+                        gone_2_relations_counter += 1
+
+                        fig.add_trace(gone_two_relation_trace)        
+
+                
+                # Make all 2-relations traces and legendgroup
+                edge_two_relation_trace = go.Scatter3d(
+                    visible='legendonly' if selected_mechanism_qfolds or intersect_mechanisms else show_edges,
+                    legendgroup="All 2-Relations",
+                    showlegend=True if r == 0 else False,
+                    x=two_relations_coords[0][r],
+                    y=two_relations_coords[1][r],
+                    z=two_relations_coords[2][r],
+                    mode="lines",
+                    # name=label_relation(relation),
+                    name="All 2-Relations",
+                    line_width=composition_edge_size if composition or (integration_cut_elements and any([m in flatten(relation.mechanisms) for m in integration_cut_elements])) else two_relations_sizes[r],
+                    line_color=composition_color if composition or (integration_cut_elements and any([m in flatten(relation.mechanisms) for m in integration_cut_elements])) else relation_color,
+                    hoverinfo="text",
+                    hovertext=hovertext_relation(relation),
+                )
+
+                fig.add_trace(edge_two_relation_trace)
 
     # 3-relations
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
