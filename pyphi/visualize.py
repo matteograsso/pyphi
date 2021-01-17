@@ -1217,6 +1217,7 @@ def plot_ces_epicycles(
     relations_gone=None,
     distinctions_gone_mechanism_color='blue',
     distinctions_gone_mechanism_hoverlabel_color='blue',
+    distinctions_gone_link_color='blue',
 ):
    
     # if intersect_mechanisms or selected_mechanism_qfolds or distinctions_gone or relations_gone:
@@ -1915,7 +1916,9 @@ def plot_ces_epicycles(
         links_widths = [composition_link_width for l in links_widths]
   
     if show_links:
-        selected_qfold_link_counter=0
+        selected_qfold_links_counter=0
+        gone_links_counter=0
+        links_counter=0
         for i, mice in enumerate(separated_ces):
 
             if selected_mechanism_qfolds:                
@@ -1923,7 +1926,7 @@ def plot_ces_epicycles(
                     link_trace = go.Scatter3d(
                         visible=True,
                         legendgroup="Links",
-                        showlegend=True if selected_qfold_link_counter == 0 else False,
+                        showlegend=True if selected_qfold_links_counter == 0 else False,
                         x=coords_links[0][i],
                         y=coords_links[1][i],
                         z=coords_links[2][i],
@@ -1936,27 +1939,10 @@ def plot_ces_epicycles(
                 )
 
                     fig.add_trace(link_trace)
-                    selected_qfold_link_counter+=1
-            else:
-                link_trace = go.Scatter3d(
-                    visible=show_links,
-                    legendgroup="Links",
-                    showlegend=True if i == 0 else False,
-                    x=coords_links[0][i],
-                    y=coords_links[1][i],
-                    z=coords_links[2][i],
-                    mode="lines",
-                    name="Links",
-                    line_width=links_widths[i],
-                    line_color=composition_color if composition or (integration_cut_elements and any([m in mice.mechanism for m in integration_cut_elements])) else "brown",
-                    hoverinfo="skip",
-                    # hovertext=hovertext_relation(relation),
-                )
-
-                fig.add_trace(link_trace)
-
+                    selected_qfold_links_counter+=1
+            
             # Make trace link for intersection only
-            if intersect_mechanisms and mice.mechanism in intersect_mechanisms:
+            elif intersect_mechanisms and mice.mechanism in intersect_mechanisms:
                 intersection_link_trace = go.Scatter3d(
                     visible=True,
                     legendgroup="intersection links",
@@ -1971,10 +1957,45 @@ def plot_ces_epicycles(
                     hoverinfo="skip",
                     # hovertext=hovertext_relation(relation),
                 )
-
                 intersection_links_counter += 1
-
                 fig.add_trace(intersection_link_trace)
+
+            elif distinctions_gone and relations_gone:
+                if mice.mechanism in distinctions_gone_mechanisms:
+                    gone_link_trace = go.Scatter3d(
+                        visible=True,
+                        legendgroup="Lost Distinctions Links",
+                        showlegend=True if gone_links_counter == 0 else False,
+                        x=coords_links[0][i],
+                        y=coords_links[1][i],
+                        z=coords_links[2][i],
+                        mode="lines",
+                        name="Lost Distinctions Links",
+                        line_width=links_widths[i],
+                        line_color=distinctions_gone_link_color,
+                        hoverinfo="skip",
+                        # hovertext=hovertext_relation(relation),
+                    )
+                    gone_links_counter += 1
+                    fig.add_trace(gone_link_trace)
+
+            else:
+                link_trace = go.Scatter3d(
+                    visible=show_links,
+                    legendgroup="Links",
+                    showlegend=True if links_counter==0 else False,
+                    x=coords_links[0][i],
+                    y=coords_links[1][i],
+                    z=coords_links[2][i],
+                    mode="lines",
+                    name="Links",
+                    line_width=links_widths[i],
+                    line_color=composition_color if composition or (integration_cut_elements and any([m in mice.mechanism for m in integration_cut_elements])) else "brown",
+                    hoverinfo="skip",
+                    # hovertext=hovertext_relation(relation),
+                )
+                links_counter += 1
+                fig.add_trace(link_trace)
 
     # 2-relations
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
