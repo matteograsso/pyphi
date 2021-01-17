@@ -1935,7 +1935,6 @@ def plot_ces_epicycles(
     # Counters for trace legend items.
     intersection_2_relations_counter = 0
     intersection_3_relations_counter = 0
-    intersection_links_counter = 0
     lost_2_relations_counter=0
     lost_3_relations_counter=0
     remained_2_relations_counter=0
@@ -1956,8 +1955,10 @@ def plot_ces_epicycles(
         links_widths = [composition_link_width for l in links_widths]
   
     if show_links:
+        intersection_links_counter = 0        
         selected_qfold_links_counter=0
         lost_links_counter=0
+        remained_links_counter=0
         links_counter=0
         for i, mice in enumerate(separated_ces):
 
@@ -2018,6 +2019,23 @@ def plot_ces_epicycles(
                     )
                     lost_links_counter += 1
                     fig.add_trace(lost_link_trace)
+                else:
+                    remained_link_trace = go.Scatter3d(
+                        visible=True,
+                        legendgroup="Remained Links",
+                        showlegend=True if remained_links_counter == 0 else False,
+                        x=coords_links[0][i],
+                        y=coords_links[1][i],
+                        z=coords_links[2][i],
+                        mode="lines",
+                        name="Remained Links",
+                        line_width=links_widths[i],
+                        line_color=distinctions_remained_link_color,
+                        hoverinfo="skip",
+                        # hovertext=hovertext_relation(relation),
+                    )
+                    remained_links_counter += 1
+                    fig.add_trace(remained_link_trace)
 
             else:
                 link_trace = go.Scatter3d(
