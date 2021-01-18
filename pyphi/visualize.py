@@ -2012,6 +2012,8 @@ def plot_ces_epicycles(
     intersection_3_relations_counter = 0
     lost_2_relations_counter=0
     lost_3_relations_counter=0
+    new_2_relations_counter=0
+    new_3_relations_counter=0
     remained_2_relations_counter=0
     remained_3_relations_counter=0
 
@@ -2387,10 +2389,52 @@ def plot_ces_epicycles(
 
                         fig.add_trace(remained_two_relation_trace)
 
-                
+                if distinctions_new and relations_new:
+
+                    if relation in relations_new:
+     
+                        new_two_relation_trace = go.Scatter3d(
+                            visible=True,
+                            legendgroup="New 2-Relations",
+                            showlegend=True if new_2_relations_counter == 0 else False,
+                            x=two_relations_coords[0][r],
+                            y=two_relations_coords[1][r],
+                            z=two_relations_coords[2][r],
+                            mode="lines",
+                            # name=label_relation(relation),
+                            name="New 2-Relations",
+                            line_width=two_relations_sizes[r],
+                            line_color=relations_new_edge_color,
+                            hoverinfo="text",
+                            hovertext=hovertext_relation(relation),
+                        )
+                        new_2_relations_counter += 1
+
+                        fig.add_trace(new_two_relation_trace)
+                    else:        
+                        remained_two_relation_trace = go.Scatter3d(
+                            visible=True,
+                            legendgroup="Remained 2-Relations",
+                            showlegend=True if remained_2_relations_counter == 0 else False,
+                            x=two_relations_coords[0][r],
+                            y=two_relations_coords[1][r],
+                            z=two_relations_coords[2][r],
+                            mode="lines",
+                            # name=label_relation(relation),
+                            name="Remained 2-Relations",
+                            line_width=two_relations_sizes[r],
+                            line_color=relations_remained_edge_color,
+                            hoverinfo="text",
+                            hovertext=hovertext_relation(relation),
+                        )
+                        remained_2_relations_counter += 1
+
+                        fig.add_trace(remained_two_relation_trace)
+
+
                 # Make all 2-relations traces and legendgroup
                 edge_two_relation_trace = go.Scatter3d(
-                    visible='legendonly' if selected_mechanism_qfolds or intersect_mechanisms or distinctions_lost else show_edges,
+                    visible='legendonly' if selected_mechanism_qfolds or intersect_mechanisms or distinctions_lost or distinctions_new else show_edges,
                     legendgroup="All 2-Relations",
                     showlegend=True if r == 0 else False,
                     x=two_relations_coords[0][r],
@@ -2642,10 +2686,64 @@ def plot_ces_epicycles(
 
                         remained_3_relations_counter += 1
 
+                        fig.add_trace(remained_three_relation_trace)  
+
+                if distinctions_new and relations_new:
+
+                    if relation in relations_new:
+     
+                        new_three_relation_trace = go.Mesh3d(
+                            visible=True,
+                            legendgroup="New 3-Relations",
+                            showlegend=True if new_3_relations_counter == 0 else False,
+                            # x, y, and z are the coordinates of vertices
+                            x=x,
+                            y=y,
+                            z=z,
+                            # i, j, and k are the vertices of triangles
+                            i=[i[r]],
+                            j=[j[r]],
+                            k=[k[r]],
+                            intensity=np.linspace(0, 1, len(x), endpoint=True),
+                            opacity=three_relations_sizes[r],
+                            colorscale=relations_new_surface_colorscale,
+                            showscale=False,
+                            name="New 3-Relations",
+                            hoverinfo="text",
+                            hovertext=hovertext_relation(relation),
+                        )
+                        new_3_relations_counter += 1
+
+                        fig.add_trace(new_three_relation_trace)                        
+
+                    else:
+                        remained_three_relation_trace = go.Mesh3d(
+                            visible=True,
+                            legendgroup="Remained 3-Relations",
+                            showlegend=True if remained_3_relations_counter == 0 else False,
+                            # x, y, and z are the coordinates of vertices
+                            x=x,
+                            y=y,
+                            z=z,
+                            # i, j, and k are the vertices of triangles
+                            i=[i[r]],
+                            j=[j[r]],
+                            k=[k[r]],
+                            intensity=np.linspace(0, 1, len(x), endpoint=True),
+                            opacity=three_relations_sizes[r],
+                            colorscale=relations_remained_surface_color,
+                            showscale=False,
+                            name="Remained 3-Relations",
+                            hoverinfo="text",
+                            hovertext=hovertext_relation(relation),
+                        )                        
+
+                        remained_3_relations_counter += 1
+
                         fig.add_trace(remained_three_relation_trace)                        
 
                 triangle_three_relation_trace = go.Mesh3d(
-                    visible='legendonly' if selected_mechanism_qfolds or intersect_mechanisms or distinctions_lost else show_mesh,
+                    visible='legendonly' if selected_mechanism_qfolds or intersect_mechanisms or distinctions_lost or distinctions_new else show_mesh,
                     legendgroup="All 3-Relations",
                     showlegend=True if r == 0 else False,
                     # x, y, and z are the coordinates of vertices
