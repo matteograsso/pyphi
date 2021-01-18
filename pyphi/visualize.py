@@ -1215,17 +1215,26 @@ def plot_ces_epicycles(
     img_background=False,
     distinctions_lost=None,
     relations_lost=None,
+    
     distinctions_lost_mechanism_color='blue',
     distinctions_lost_mechanism_hoverlabel_color='blue',
     distinctions_lost_link_color='blue',
+    relations_lost_edge_color='blue',
+    relations_lost_surface_colorscale='blues',
+    
+    distinctions_new_mechanism_color='orange',
+    distinctions_new_mechanism_hoverlabel_color='orange',
+    distinctions_new_link_color='orange',
+    relations_new_edge_color='orange',
+    relations_new_surface_colorscale='oranges',
+    
     show_distinctions_remained_mechanisms=False,
     distinctions_remained_mechanism_color='gray',
     distinctions_remained_mechanism_hoverlabel_color='gray',
     distinctions_remained_link_color='gray',    
-    relations_lost_edge_color='blue',
-    relations_lost_surface_colorscale='blues',
     relations_remained_edge_color='gray',
-    relations_remained_surface_color='grays',
+    relations_remained_surface_color='greys',
+
     
 ):
    
@@ -2501,6 +2510,10 @@ def plot_ces_epicycles(
                             hoverinfo="text",
                             hovertext=hovertext_relation(relation),
                         )
+                        lost_3_relations_counter += 1
+
+                        fig.add_trace(lost_three_relation_trace)                        
+
                     else:
                         remained_three_relation_trace = go.Mesh3d(
                             visible=True,
