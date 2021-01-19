@@ -1413,8 +1413,8 @@ def plot_ces_epicycles(
         distinctions_lost_mices = flatten([[d.cause,d.effect] for d in distinctions_lost])
 
     if distinctions_new and relations_new:
-        distinctions_new_indices = [i for i in range(len(ces)) if ces[i] in distinctions_new]
         distinctions_new_mechanisms = [d.mechanism for d in distinctions_new]
+        distinctions_new_indices = [i for i in range(len(ces)) if ces[i].mechanism in distinctions_new_mechanisms]
         distinctions_new_labels = [make_label(mechanism, node_labels=subsystem.node_labels, bold=False, state=False) for mechanism in distinctions_new_mechanisms]        
         distinctions_new_mices = flatten([[d.cause,d.effect] for d in distinctions_new])        
     
