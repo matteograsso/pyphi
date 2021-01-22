@@ -1224,6 +1224,7 @@ def plot_ces_epicycles(
     relations_lost_edge_width_multiplier=1,
     relations_lost_surface_colorscale='blues',
 
+    show_new=False,
     distinctions_new=[],
     relations_new=[],    
     distinctions_new_mechanism_color='orange',
@@ -1426,7 +1427,7 @@ def plot_ces_epicycles(
         distinctions_lost_labels = [make_label(mechanism, node_labels=subsystem.node_labels, bold=False, state=False) for mechanism in distinctions_lost_mechanisms]        
         distinctions_lost_mices = flatten([[d.cause,d.effect] for d in distinctions_lost])
 
-    if distinctions_new and relations_new:
+    if distinctions_new and relations_new or show_new:
         distinctions_new_mechanisms = [d.mechanism for d in distinctions_new]
         distinctions_new_indices = [i for i in range(len(ces)) if ces[i].mechanism in distinctions_new_mechanisms]
         distinctions_new_labels = [make_label(mechanism, node_labels=subsystem.node_labels, bold=False, state=False) for mechanism in distinctions_new_mechanisms]        
@@ -1440,7 +1441,7 @@ def plot_ces_epicycles(
         distinctions_changed_mices_list = [(m.mechanism,m.purview,m.direction) for m in distinctions_changed_mices]
         relations_changed_list = [[(m.mechanism,m.purview,m.direction) for m in r.relata] for r in relations_changed]
     
-    if distinctions_lost and relations_lost or show_lost or distinctions_new and relations_new:
+    if distinctions_lost and relations_lost or show_lost or show_new or distinctions_new and relations_new:
         distinctions_remained = [d for d in ces if d not in distinctions_lost+distinctions_new]
         distinctions_remained_indices = [i for i in range(len(ces)) if ces[i] in distinctions_remained]
         distinctions_remained_mechanisms = [d.mechanism for d in distinctions_remained]
@@ -1490,7 +1491,7 @@ def plot_ces_epicycles(
         fig.add_trace(labels_mechanisms_trace)
 
     # Make lost mechanism labels trace
-    elif distinctions_lost and relations_lost or show_lost or distinctions_new and relations_new:
+    elif distinctions_lost and relations_lost or show_lost or distinctions_new and relations_new or show_new:
         if distinctions_lost and relations_lost or show_lost:
             distinctions_lost_text=[mechanism_labels[i] if mechanisms[i] in distinctions_lost_mechanisms else '' for i in range(len(mechanisms))]        
             labels_mechanisms_trace = go.Scatter3d(
@@ -1510,7 +1511,7 @@ def plot_ces_epicycles(
             )
             fig.add_trace(labels_mechanisms_trace)
 
-        if distinctions_new and relations_new:
+        if distinctions_new and relations_new or show_new:
             distinctions_new_text=[mechanism_labels[i] if mechanisms[i] in distinctions_new_mechanisms else '' for i in range(len(mechanisms))]        
             labels_mechanisms_trace = go.Scatter3d(
                 visible=show_mechanism_labels,
@@ -1829,7 +1830,7 @@ def plot_ces_epicycles(
         )
         fig.add_trace(lost_labels_cause_purviews_trace)        
     
-    elif distinctions_new and relations_new:
+    elif distinctions_new and relations_new or show_new:
         new_labels_cause_purviews_trace = go.Scatter3d(
             visible=show_purview_labels,
             x=[causes_x[i] for i in distinctions_new_indices],
@@ -1940,7 +1941,7 @@ def plot_ces_epicycles(
         )
         fig.add_trace(lost_labels_effect_purviews_trace)    
 
-    elif distinctions_new and relations_new:
+    elif distinctions_new and relations_new or show_new:
         new_labels_effect_purviews_trace = go.Scatter3d(
             visible=show_purview_labels,
             x=[effects_x[i] for i in distinctions_new_indices],
@@ -2159,7 +2160,7 @@ def plot_ces_epicycles(
                 intersection_links_counter += 1
                 fig.add_trace(intersection_link_trace)
 
-            elif distinctions_lost and relations_lost or show_lost or distinctions_new and relations_new or distinctions_changed and relations_changed:
+            elif distinctions_lost and relations_lost or show_lost or distinctions_new and relations_new or show_new or distinctions_changed and relations_changed:
                 if distinctions_lost and relations_lost or show_lost:
                     if mice.mechanism in distinctions_lost_mechanisms:
                         lost_link_trace = go.Scatter3d(
@@ -2196,7 +2197,7 @@ def plot_ces_epicycles(
                         remained_links_counter += 1
                         fig.add_trace(remained_link_trace)
                 
-                if distinctions_new and relations_new:
+                if distinctions_new and relations_new or show_new:
                     if mice.mechanism in distinctions_new_mechanisms:
                         new_link_trace = go.Scatter3d(
                             visible=True,
@@ -2508,7 +2509,7 @@ def plot_ces_epicycles(
 
                         fig.add_trace(remained_two_relation_trace)
 
-                if distinctions_new and relations_new:
+                if show_new or distinctions_new and relations_new:
 
                     if relation in relations_new:
      
@@ -2596,7 +2597,7 @@ def plot_ces_epicycles(
 
                 # Make all 2-relations traces and legendgroup
                 edge_two_relation_trace = go.Scatter3d(
-                    visible='legendonly' if show_lost or selected_mechanism_qfolds or intersect_mechanisms or distinctions_lost or distinctions_new or distinctions_changed else show_edges,
+                    visible='legendonly' if show_lost or show_new or selected_mechanism_qfolds or intersect_mechanisms or distinctions_lost or distinctions_new or distinctions_changed else show_edges,
                     legendgroup="All 2-Relations",
                     showlegend=True if r == 0 else False,
                     x=two_relations_coords[0][r],
@@ -2850,7 +2851,7 @@ def plot_ces_epicycles(
 
                         fig.add_trace(remained_three_relation_trace)  
 
-                if distinctions_new and relations_new:
+                if show_new or distinctions_new and relations_new:
 
                     if relation in relations_new:
      
@@ -2905,7 +2906,7 @@ def plot_ces_epicycles(
                         fig.add_trace(remained_three_relation_trace)                        
 
                 triangle_three_relation_trace = go.Mesh3d(
-                    visible='legendonly' if show_lost or selected_mechanism_qfolds or intersect_mechanisms or distinctions_lost or distinctions_new else show_mesh,
+                    visible='legendonly' if show_lost or show_new or selected_mechanism_qfolds or intersect_mechanisms or distinctions_lost or distinctions_new else show_mesh,
                     legendgroup="All 3-Relations",
                     showlegend=True if r == 0 else False,
                     # x, y, and z are the coordinates of vertices
