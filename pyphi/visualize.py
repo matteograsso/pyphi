@@ -1221,7 +1221,7 @@ def plot_ces_epicycles(
     distinctions_lost_mechanism_hoverlabel_color='blue',
     distinctions_lost_link_color='blue',
     relations_lost_edge_color='blue',
-    relations_lost_edge_width_multiplier=1,
+    relations_lost_edge_width_multiplier=.5,
     relations_lost_surface_colorscale='blues',
 
     show_new=False,
@@ -1237,20 +1237,19 @@ def plot_ces_epicycles(
     show_distinctions_remained_mechanisms=False,
     distinctions_remained_mechanism_color='gray',
     distinctions_remained_mechanism_hoverlabel_color='gray',
-    distinctions_remained_link_color='gray',    
-    relations_remained_edge_color='gray',
-    relations_remained_edge_width_multiplier=.25,
+    distinctions_remained_link_color='rgba(160,160,160,1)',    
+    relations_remained_edge_color='rgba(160,160,160,1)',
+    relations_remained_edge_width_multiplier=.75,
     relations_remained_surface_color='greys',
 
     distinctions_changed=[],
     relations_changed=[],
-    # relations_changed_phis=[],
     distinctions_changed_mechanism_color='black',
     distinctions_changed_up_link_color='orange',
     distinctions_changed_down_link_color='blue',
     relations_changed_up_edge_color='orange',
     relations_changed_down_edge_color='blue',
-    relations_changed_edge_width_multiplier=.5,
+    relations_changed_edge_width_multiplier=1.25,
     relations_changed_up_surface_colorscale='oranges',
     relations_changed_down_surface_colorscale='blues',
     
@@ -2234,10 +2233,10 @@ def plot_ces_epicycles(
                         fig.add_trace(remained_link_trace)
 
                 if distinctions_changed and relations_changed:
-                    for mice1 in distinctions_changed_mices:                        
+                    for mice1 in distinctions_changed_mices:           
 
                         if (mice.mechanism,mice.purview,mice.direction)==(mice1.mechanism,mice1.purview,mice1.direction) and mice.phi!=mice1.phi:
-                            phi_delta=mice1.phi/mice.phi
+                            phi_delta=mice1.phi/mice.phi                    
                             changed_link_trace = go.Scatter3d(  
                                 visible=True,
                                 legendgroup="Changed Links",
