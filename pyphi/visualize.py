@@ -1212,6 +1212,7 @@ def plot_ces_epicycles(
     image_file = 'brain.png',
     show_image = False,
     selected_mechanism_qfolds=None,
+    selected_mechanism_qfolds_mechanism_label_color='black',
     img_background=False,
 
     show_lost=False,
@@ -1406,13 +1407,14 @@ def plot_ces_epicycles(
 # Get indices and labels of selected mechanisms q-fold (if specified)
     if selected_mechanism_qfolds:
         selected_mechanisms_indices = [i for i in range(len(ces)) if ces[i].mechanism in selected_mechanism_qfolds]
+        selected_qfold_links_mices = rel.separate_ces([ces[i] for i in selected_mechanisms_indices])
         selected_mechanisms_labels = [make_label(mechanism, node_labels=subsystem.node_labels, bold=False, state=False) for mechanism in selected_mechanism_qfolds]        
         selected_qfold_relations = [r for r in relations if any([m in r.mechanisms for m in selected_mechanism_qfolds])]
 
-        selected_qfold_distinctions = []
-        for r in selected_qfold_relations:
-            selected_qfold_distinctions.extend(r.mechanisms)
-        selected_qfold_distinctions = sorted(sorted(list(set(selected_qfold_distinctions))),key=len)
+        # selected_qfold_distinctions = []
+        # for r in selected_qfold_relations:
+        #     selected_qfold_distinctions.extend(r.mechanisms)
+        # selected_qfold_distinctions = sorted(sorted(list(set(selected_qfold_distinctions))),key=len)
 
         # selected_qfold_purviews = [mice.purview if mice.mechanism in selected_qfold_distinctions else None for mice in rel.separate_ces(ces)]        
         selected_qfold_mices = list(set(flatten([[mice for relation in selected_qfold_relations if mice in relation.relata] for mice in separated_ces])))
@@ -1471,17 +1473,17 @@ def plot_ces_epicycles(
 
     # Make selected mechanism labels trace
     if selected_mechanism_qfolds:        
-        selected_mechanism_qfold_text=[mechanism_labels[i] if mechanisms[i] in selected_qfold_distinctions else '' for i in range(len(mechanisms))]
+        selected_mechanism_qfold_text=[mechanism_labels[i] if mechanisms[i] in selected_mechanism_qfolds else '' for i in range(len(mechanisms))]
         labels_mechanisms_trace = go.Scatter3d(
             visible= 'legendonly' if mechanisms_as_annotations or intersect_mechanisms else show_mechanism_labels,
             x=xm,
             y=ym,
             z=[n + labels_z_offset + mechanism_z_offset for n in zm],
             mode="text",
-            text=selected_mechanism_qfold_text if selected_mechanism_qfolds else mechanism_labels,
-            name="Mechanism Labels",
+            text=selected_mechanism_qfold_text,
+            name="Selected Mechanisms Labels",
             showlegend=True,
-            textfont=dict(size=mechanism_labels_size, color="black"),
+            textfont=dict(size=mechanism_labels_size, color=selected_mechanism_qfolds_mechanism_label_color),
             textposition=mechanism_label_position,
             hoverinfo="text",
             hovertext=mechanism_hovertext,
@@ -1895,7 +1897,7 @@ def plot_ces_epicycles(
             mode="text",
             text=[effect_purview_labels[i] for i in selected_qfold_effects_indices],
             textposition=purview_label_position,
-            name="Effect Purview Labels",
+            name="Selected Mechanisms Effect Purview Labels",
             showlegend=True,
             textfont=dict(size=purview_labels_size, color="green"),
             hoverinfo="text",
@@ -2121,10 +2123,10 @@ def plot_ces_epicycles(
         for i, mice in enumerate(separated_ces):
 
             if selected_mechanism_qfolds:                
-                if mice in selected_qfold_mices:
+                if mice in selected_qfold_links_mices:
                     link_trace = go.Scatter3d(
                         visible=True,
-                        legendgroup="Links",
+                        legendgroup="Selected Mechanisms Links",
                         showlegend=True if selected_qfold_links_counter == 0 else False,
                         x=coords_links[0][i],
                         y=coords_links[1][i],
