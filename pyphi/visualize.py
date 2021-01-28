@@ -1123,6 +1123,7 @@ def plot_ces_epicycles(
     vertex_size_range=(10, 30),
     edge_size_range=(0.5, 3),
     surface_size_range=(0.001, 0.05),
+    surface_colorscale='viridis',
     plot_dimentions=None,
     mechanism_labels_size=15,
     mechanism_label_position='top center',
@@ -1140,6 +1141,7 @@ def plot_ces_epicycles(
     show_vertices_mechanisms=False,
     show_vertices_purviews=False,
     show_edges=True,
+    transparent_edges=False,
     show_mesh=True,
     show_node_qfolds=False,
     show_mechanism_qfolds=False,
@@ -1253,6 +1255,8 @@ def plot_ces_epicycles(
     relations_changed_edge_width_multiplier=1.25,
     relations_changed_up_surface_colorscale='oranges',
     relations_changed_down_surface_colorscale='blues',
+
+    selected_compound_purview=None,
     
 ):
    
@@ -1407,7 +1411,7 @@ def plot_ces_epicycles(
 # Get indices and labels of selected mechanisms q-fold (if specified)
     if selected_mechanism_qfolds:
         selected_mechanisms_indices = [i for i in range(len(ces)) if ces[i].mechanism in selected_mechanism_qfolds]
-        selected_qfold_links_mices = rel.separate_ces([ces[i] for i in selected_mechanisms_indices])
+        # selected_qfold_mices = rel.separate_ces([ces[i] for i in selected_mechanisms_indices])
         selected_mechanisms_labels = [make_label(mechanism, node_labels=subsystem.node_labels, bold=False, state=False) for mechanism in selected_mechanism_qfolds]        
         selected_qfold_relations = [r for r in relations if any([m in r.mechanisms for m in selected_mechanism_qfolds])]
 
@@ -1421,6 +1425,14 @@ def plot_ces_epicycles(
         # selected_qfold_causes = selected_qfold_purviews[::2]
         # selected_qfold_effects = selected_qfold_purviews[1::2]
     # purview_labels = list(map(label_purview, separated_ces))
+
+    if selected_compound_purview:
+        selected_compound_purview_indices = [i for i in range(len(ces)) if ces[i].mechanism in selected_compound_purview]
+        selected_compound_purview_labels = [make_label(mechanism, node_labels=subsystem.node_labels, bold=False, state=False) for mechanism in selected_compound_purview]        
+        selected_compound_purview_relations = [r for r in relations if any([m in r.mechanisms for m in selected_compound_purview])]
+        selected_compound_purview_mices = list(set(flatten([[mice for relation in selected_compound_purview_relations if mice in relation.relata] for mice in separated_ces])))
+        selected_compound_purview_linked_mices = rel.separate_ces([ces[i] for i in selected_compound_purview_indices])
+
 
     if distinctions_lost and relations_lost or show_lost:
         distinctions_lost_indices = [i for i in range(len(ces)) if ces[i] in distinctions_lost]
@@ -1484,6 +1496,25 @@ def plot_ces_epicycles(
             name="Selected Mechanisms Labels",
             showlegend=True,
             textfont=dict(size=mechanism_labels_size, color=selected_mechanism_qfolds_mechanism_label_color),
+            textposition=mechanism_label_position,
+            hoverinfo="text",
+            hovertext=mechanism_hovertext,
+            hoverlabel=dict(bgcolor="black", font_color="white"),
+        )
+        fig.add_trace(labels_mechanisms_trace)
+
+    elif selected_compound_purview:        
+        selected_compound_purview_text=[mechanism_labels[i] if mechanisms[i] in selected_compound_purview else '' for i in range(len(mechanisms))]
+        labels_mechanisms_trace = go.Scatter3d(
+            visible= 'legendonly' if mechanisms_as_annotations or intersect_mechanisms else show_mechanism_labels,
+            x=xm,
+            y=ym,
+            z=[n + labels_z_offset + mechanism_z_offset for n in zm],
+            mode="text",
+            text=selected_compound_purview_text,
+            name="Selected Mechanisms Labels",
+            showlegend=True,
+            textfont=dict(size=mechanism_labels_size, color='black'),
             textposition=mechanism_label_position,
             hoverinfo="text",
             hovertext=mechanism_hovertext,
@@ -1777,7 +1808,6 @@ def plot_ces_epicycles(
     # Make cause purview labels trace
     if selected_mechanism_qfolds:
         selected_qfold_causes_indices = [i for i,purview in enumerate(separated_ces[::2]) if purview in selected_qfold_mices]        
-    
         selected_mechanism_labels_cause_purviews_trace = go.Scatter3d(
             visible=show_purview_labels,
             x=[causes_x[i] for i in selected_qfold_causes_indices],
@@ -1794,6 +1824,25 @@ def plot_ces_epicycles(
             hoverlabel=dict(bgcolor="red"),
         )
         fig.add_trace(selected_mechanism_labels_cause_purviews_trace)
+
+    elif selected_compound_purview:
+        selected_compound_purview_causes_indices = [i for i,purview in enumerate(separated_ces[::2]) if purview in selected_compound_purview_mices]        
+        selected_compound_purview_labels_cause_purviews_trace = go.Scatter3d(
+            visible=show_purview_labels,
+            x=[causes_x[i] for i in selected_compound_purview_causes_indices],
+            y=[causes_y[i] for i in selected_compound_purview_causes_indices],
+            z=[causes_z[i] + (vertex_size_range[1] / 10 ** 3 + labels_z_offset) for i in selected_compound_purview_causes_indices],
+            mode="text",
+            text=[cause_purview_labels[i] for i in selected_compound_purview_causes_indices],
+            textposition=purview_label_position,
+            name="Selected Compound Purview Cause Purview Labels",
+            showlegend=True,
+            textfont=dict(size=purview_labels_size, color="red"),
+            hoverinfo="text",
+            hovertext=causes_hovertext,
+            hoverlabel=dict(bgcolor="red"),
+        )
+        fig.add_trace(selected_compound_purview_labels_cause_purviews_trace)        
 
     elif intersect_mechanisms:
         intersection_labels_cause_purviews_trace = go.Scatter3d(
@@ -1905,6 +1954,25 @@ def plot_ces_epicycles(
             hoverlabel=dict(bgcolor="green"),
         )
         fig.add_trace(labels_effect_purviews_trace)
+
+    elif selected_compound_purview:
+        selected_compound_purview_effects_indices = [i for i,purview in enumerate(separated_ces[1::2]) if purview in selected_compound_purview_mices]        
+        selected_compound_purview_labels_effect_purviews_trace = go.Scatter3d(
+            visible=show_purview_labels,
+            x=[effects_x[i] for i in selected_compound_purview_effects_indices],
+            y=[effects_y[i] for i in selected_compound_purview_effects_indices],
+            z=[effects_z[i] + (vertex_size_range[1] / 10 ** 3 + labels_z_offset) for i in selected_compound_purview_effects_indices],
+            mode="text",
+            text=[effect_purview_labels[i] for i in selected_compound_purview_effects_indices],
+            textposition=purview_label_position,
+            name="Selected Compound Purview Effect Purview Labels",
+            showlegend=True,
+            textfont=dict(size=purview_labels_size, color="green"),
+            hoverinfo="text",
+            hovertext=effects_hovertext,
+            hoverlabel=dict(bgcolor="green"),
+        )
+        fig.add_trace(selected_compound_purview_labels_effect_purviews_trace)      
 
     elif intersect_mechanisms:
         intersection_labels_effect_purviews_trace = go.Scatter3d(
@@ -2097,6 +2165,7 @@ def plot_ces_epicycles(
     changed_3_relations_counter=0    
     remained_2_relations_counter=0
     remained_3_relations_counter=0
+    compound_purview_2_relations_counter=0
 
     # Plot distinction links (edge connecting cause, mechanism, effect vertices)
     coords_links = (
@@ -2123,10 +2192,30 @@ def plot_ces_epicycles(
         for i, mice in enumerate(separated_ces):
 
             if selected_mechanism_qfolds:                
-                if mice in selected_qfold_links_mices:
+                if mice in selected_qfold_mices:
                     link_trace = go.Scatter3d(
                         visible=True,
                         legendgroup="Selected Mechanisms Links",
+                        showlegend=True if selected_qfold_links_counter == 0 else False,
+                        x=coords_links[0][i],
+                        y=coords_links[1][i],
+                        z=coords_links[2][i],
+                        mode="lines",
+                        name="Links",
+                        line_width=links_widths[i],
+                        line_color=composition_color if composition or (integration_cut_elements and any([m in purview.mechanism for m in integration_cut_elements])) else "brown",
+                        hoverinfo="skip",
+                        # hovertext=hovertext_relation(relation),
+                )
+
+                    fig.add_trace(link_trace)
+                    selected_qfold_links_counter+=1
+
+            elif selected_compound_purview:                        
+                if mice in selected_compound_purview_linked_mices:
+                    link_trace = go.Scatter3d(
+                        visible=True,
+                        legendgroup="Compound Purview Links",
                         showlegend=True if selected_qfold_links_counter == 0 else False,
                         x=coords_links[0][i],
                         y=coords_links[1][i],
@@ -2355,7 +2444,7 @@ def plot_ces_epicycles(
                         relation_nodes,
                     )
 
-                # Make nechanism contexts traces and legendgroups
+                # Make mechanism contexts traces and legendgroups
                 if show_mechanism_qfolds:
                     legend_mechanisms = plot_mechanism_qfolds2D(
                         r,
@@ -2386,6 +2475,22 @@ def plot_ces_epicycles(
                         legend_mechanisms,
                         relation_color,
                     )
+
+                # if selected_compound_purview:
+                    
+                #     legend_mechanisms = plot_selected_mechanism_qfolds2D(
+                #         r,
+                #         relation,
+                #         selected_compound_purview,
+                #         show_edges,
+                #         node_labels,
+                #         go,
+                #         fig,
+                #         two_relations_coords,
+                #         two_relations_sizes,
+                #         legend_mechanisms,
+                #         relation_color,
+                #     )
 
 
                 # Make compound purview contexts traces and legendgroups
@@ -2465,6 +2570,30 @@ def plot_ces_epicycles(
                         )
 
                         intersection_2_relations_counter += 1
+
+                        fig.add_trace(intersection_two_relation_trace)
+
+                if selected_compound_purview:
+
+                    if any(mice for mice in selected_compound_purview_linked_mices if mice in relation.relata):
+     
+                        intersection_two_relation_trace = go.Scatter3d(
+                            visible=True,
+                            legendgroup=f"Selected Compound Purview 2-Relations",
+                            showlegend=True if compound_purview_2_relations_counter == 0 else False,
+                            x=two_relations_coords[0][r],
+                            y=two_relations_coords[1][r],
+                            z=two_relations_coords[2][r],
+                            mode="lines",
+                            # name=label_relation(relation),
+                            name=f"{''.join(selected_compound_purview_labels)} Compound Purview 2-Relations",
+                            line_width=two_relations_sizes[r],
+                            line_color=composition_color if composition else relation_color,
+                            hoverinfo="text",
+                            hovertext=hovertext_relation(relation),
+                        )
+
+                        compound_purview_2_relations_counter += 1
 
                         fig.add_trace(intersection_two_relation_trace)
 
@@ -2579,7 +2708,7 @@ def plot_ces_epicycles(
 
                 # Make all 2-relations traces and legendgroup
                 edge_two_relation_trace = go.Scatter3d(
-                    visible='legendonly' if show_lost or show_new or selected_mechanism_qfolds or intersect_mechanisms or distinctions_lost or distinctions_new or distinctions_changed else show_edges,
+                    visible='legendonly' if selected_compound_purview or show_lost or show_new or selected_mechanism_qfolds or intersect_mechanisms or distinctions_lost or distinctions_new or distinctions_changed else show_edges,
                     legendgroup="All 2-Relations",
                     showlegend=True if r == 0 else False,
                     x=two_relations_coords[0][r],
@@ -2595,6 +2724,25 @@ def plot_ces_epicycles(
                 )
 
                 fig.add_trace(edge_two_relation_trace)
+
+                if transparent_edges:
+                    edge_two_relation_trace = go.Scatter3d(
+                        visible=True,
+                        legendgroup="Transparent 2-Relations",
+                        showlegend=True if r == 0 else False,
+                        x=two_relations_coords[0][r],
+                        y=two_relations_coords[1][r],
+                        z=two_relations_coords[2][r],
+                        mode="lines",
+                        # name=label_relation(relation),
+                        name="Transparent 2-Relations",
+                        line_width=composition_edge_size if composition or (integration_cut_elements and any([m in flatten(relation.mechanisms) for m in integration_cut_elements])) else two_relations_sizes[r],
+                        line_color='rgba(0,0,0,0)',
+                        hoverinfo="text",
+                        hovertext=hovertext_relation(relation),
+                    )
+
+                    fig.add_trace(edge_two_relation_trace)
     
     
         # if [(m.mechanism,m.purview,m.direction) for m in relation.relata] not in relations_changed_list:        
@@ -2923,7 +3071,7 @@ def plot_ces_epicycles(
                     # Intensity of each vertex, which will be interpolated and color-coded
                     intensity=[composition_surface_intensity for x in range(len(x))] if composition or (integration_cut_elements and any([m in flatten(relation.mechanisms) for m in integration_cut_elements])) else np.linspace(0, 1, len(x), endpoint=True),
                     opacity=composition_surface_opacity if composition or (integration_cut_elements and any([m in flatten(relation.mechanisms) for m in integration_cut_elements])) else three_relations_sizes[r],
-                    colorscale="Greys" if composition or (integration_cut_elements and any([m in flatten(relation.mechanisms) for m in integration_cut_elements])) else "viridis",
+                    colorscale="Greys" if composition or (integration_cut_elements and any([m in flatten(relation.mechanisms) for m in integration_cut_elements])) else surface_colorscale,
                     showscale=False,
                     name="All 3-Relations",
                     hoverinfo="text",
