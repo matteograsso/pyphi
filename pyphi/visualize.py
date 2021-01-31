@@ -1218,6 +1218,7 @@ def plot_ces_epicycles(
     img_background=False,
 
     show_lost=False,
+    purviews_lost=[],
     distinctions_lost=[],
     relations_lost=[],
     distinctions_lost_mechanism_color='blue',
@@ -1228,6 +1229,7 @@ def plot_ces_epicycles(
     relations_lost_surface_colorscale='blues',
 
     show_new=False,
+    purviews_new=[],
     distinctions_new=[],
     relations_new=[],    
     distinctions_new_mechanism_color='orange',
@@ -1237,6 +1239,9 @@ def plot_ces_epicycles(
     relations_new_edge_width_multiplier=3,
     relations_new_surface_colorscale='oranges',
     
+    distinctions_remained=[],
+    purviews_remained=[],
+    # relations_remained=[],
     show_distinctions_remained_mechanisms=False,
     distinctions_remained_mechanism_color='gray',
     distinctions_remained_mechanism_hoverlabel_color='gray',
@@ -1245,11 +1250,12 @@ def plot_ces_epicycles(
     relations_remained_edge_width_multiplier=.75,
     relations_remained_surface_color='greys',
 
+    purviews_changed=[],
     distinctions_changed=[],
     relations_changed=[],
-    distinctions_changed_mechanism_color='black',
-    distinctions_changed_up_link_color='orange',
-    distinctions_changed_down_link_color='blue',
+    purviews_changed_mechanism_color='black',
+    purviews_changed_up_link_color='orange',
+    purviews_changed_down_link_color='blue',
     relations_changed_up_edge_color='orange',
     relations_changed_down_edge_color='blue',
     relations_changed_edge_width_multiplier=1.25,
@@ -1434,32 +1440,34 @@ def plot_ces_epicycles(
         selected_compound_purview_linked_mices = rel.separate_ces([ces[i] for i in selected_compound_purview_indices])
 
 
-    if distinctions_lost and relations_lost or show_lost:
-        distinctions_lost_indices = [i for i in range(len(ces)) if ces[i] in distinctions_lost]
+    if purviews_lost and relations_lost or show_lost:
         distinctions_lost_mechanisms = [d.mechanism for d in distinctions_lost]
-        distinctions_lost_labels = [make_label(mechanism, node_labels=subsystem.node_labels, bold=False, state=False) for mechanism in distinctions_lost_mechanisms]        
-        distinctions_lost_mices = flatten([[d.cause,d.effect] for d in distinctions_lost])
+        purviews_lost_mechanisms = sorted(sorted(set([m.mechanism for m in purviews_lost])),key=len)
+        purviews_lost_mechanisms_indices = [i for i in range(len(ces)) if ces[i].mechanism in purviews_lost_mechanisms]
+        purviews_lost_indices = [i for i in range(len(separated_ces)) if separated_ces[i] in purviews_lost]
+        purviews_lost_labels = [make_label(mechanism, node_labels=subsystem.node_labels, bold=False, state=False) for mechanism in purviews_lost_mechanisms]
 
-    if distinctions_new and relations_new or show_new:
+    if purviews_new and relations_new or show_new:
         distinctions_new_mechanisms = [d.mechanism for d in distinctions_new]
-        distinctions_new_indices = [i for i in range(len(ces)) if ces[i].mechanism in distinctions_new_mechanisms]
-        distinctions_new_labels = [make_label(mechanism, node_labels=subsystem.node_labels, bold=False, state=False) for mechanism in distinctions_new_mechanisms]        
-        distinctions_new_mices = flatten([[d.cause,d.effect] for d in distinctions_new])        
+        purviews_new_mechanisms = sorted(sorted(set([m.mechanism for m in purviews_new])),key=len)
+        purviews_new_mechanisms_indices = [i for i in range(len(ces)) if ces[i].mechanism in purviews_new_mechanisms]
+        purviews_new_indices = [i for i in range(len(separated_ces)) if separated_ces[i] in purviews_new]
+        purviews_new_labels = [make_label(mechanism, node_labels=subsystem.node_labels, bold=False, state=False) for mechanism in purviews_new_mechanisms]
 
-    if distinctions_changed and relations_changed:
+    if purviews_changed and relations_changed:
         distinctions_changed_mechanisms = [d.mechanism for d in distinctions_changed]
-        distinctions_changed_indices = [i for i in range(len(ces)) if ces[i].mechanism in distinctions_changed_mechanisms]
-        distinctions_changed_labels = [make_label(mechanism, node_labels=subsystem.node_labels, bold=False, state=False) for mechanism in distinctions_changed_mechanisms]        
-        distinctions_changed_mices = list(flatten([[d.cause,d.effect] for d in distinctions_changed]))
-        distinctions_changed_mices_list = [(m.mechanism,m.purview,m.direction) for m in distinctions_changed_mices]
+        purviews_changed_mechanisms = sorted(sorted(set([m.mechanism for m in purviews_changed])),key=len)
+        purviews_changed_mechanisms_indices = [i for i in range(len(ces)) if ces[i].mechanism in purviews_changed_mechanisms]
+        purviews_changed_indices = [i for i in range(len(separated_ces)) if separated_ces[i] in purviews_changed]
+        purviews_changed_labels = [make_label(mechanism, node_labels=subsystem.node_labels, bold=False, state=False) for mechanism in purviews_changed_mechanisms]        
+        
+        purviews_changed_mices_list = [(m.mechanism,m.purview,m.direction) for m in purviews_changed_mices]
         relations_changed_list = [[(m.mechanism,m.purview,m.direction) for m in r[1].relata] for r in relations_changed]
     
-    if distinctions_lost and relations_lost or show_lost or show_new or distinctions_new and relations_new:
-        distinctions_remained = [d for d in ces if d not in distinctions_lost+distinctions_new]
+    if purviews_lost or purviews_new or show_lost or show_new:
         distinctions_remained_indices = [i for i in range(len(ces)) if ces[i] in distinctions_remained]
         distinctions_remained_mechanisms = [d.mechanism for d in distinctions_remained]
-        distinctions_remained_labels = [make_label(mechanism, node_labels=subsystem.node_labels, bold=False, state=False) for mechanism in distinctions_remained_mechanisms]        
-        distinctions_remained_mices = flatten([[d.cause,d.effect] for d in distinctions_remained])
+        distinctions_remained_labels = [make_label(mechanism, node_labels=subsystem.node_labels, bold=False, state=False) for mechanism in distinctions_remained_mechanisms]
 
     purview_labels = [
         label_purview(mice, state=list(rel.maximal_state(mice)[0]))
@@ -1865,17 +1873,17 @@ def plot_ces_epicycles(
     elif distinctions_lost and relations_lost or show_lost:
         lost_labels_cause_purviews_trace = go.Scatter3d(
             visible=show_purview_labels,
-            x=[causes_x[i] for i in distinctions_lost_indices],
-            y=[causes_y[i] for i in distinctions_lost_indices],
-            z=[causes_z[i] + (vertex_size_range[1] / 10 ** 3 + labels_z_offset) for i in distinctions_lost_indices],
+            x=[causes_x[i] for i in purviews_lost_mechanisms_indices],
+            y=[causes_y[i] for i in purviews_lost_mechanisms_indices],
+            z=[causes_z[i] + (vertex_size_range[1] / 10 ** 3 + labels_z_offset) for i in purviews_lost_mechanisms_indices],
             mode="text",
-            text=[cause_purview_labels[i] for i in distinctions_lost_indices],
+            text=[cause_purview_labels[i] for i in purviews_lost_mechanisms_indices],
             textposition=purview_label_position,
             name="Lost Cause Purviews",
             showlegend=True,
             textfont=dict(size=purview_labels_size, color="red"),
             hoverinfo="text",
-            hovertext=[causes_hovertext[i] for i in distinctions_lost_indices],
+            hovertext=[causes_hovertext[i] for i in purviews_lost_mechanisms_indices],
             hoverlabel=dict(bgcolor="red"),
         )
         fig.add_trace(lost_labels_cause_purviews_trace)        
@@ -1883,17 +1891,17 @@ def plot_ces_epicycles(
     elif distinctions_new and relations_new or show_new:
         new_labels_cause_purviews_trace = go.Scatter3d(
             visible=show_purview_labels,
-            x=[causes_x[i] for i in distinctions_new_indices],
-            y=[causes_y[i] for i in distinctions_new_indices],
-            z=[causes_z[i] + (vertex_size_range[1] / 10 ** 3 + labels_z_offset) for i in distinctions_new_indices],
+            x=[causes_x[i] for i in purviews_new_mechanisms_indices],
+            y=[causes_y[i] for i in purviews_new_mechanisms_indices],
+            z=[causes_z[i] + (vertex_size_range[1] / 10 ** 3 + labels_z_offset) for i in purviews_new_mechanisms_indices],
             mode="text",
-            text=[cause_purview_labels[i] for i in distinctions_new_indices],
+            text=[cause_purview_labels[i] for i in purviews_new_mechanisms_indices],
             textposition=purview_label_position,
             name="New Cause Purviews",
             showlegend=True,
             textfont=dict(size=purview_labels_size, color="red"),
             hoverinfo="text",
-            hovertext=[causes_hovertext[i] for i in distinctions_new_indices],
+            hovertext=[causes_hovertext[i] for i in purviews_new_mechanisms_indices],
             hoverlabel=dict(bgcolor="red"),
         )
         fig.add_trace(new_labels_cause_purviews_trace)  
@@ -1901,17 +1909,17 @@ def plot_ces_epicycles(
     elif distinctions_changed and relations_changed:
         changed_labels_cause_purviews_trace = go.Scatter3d(
             visible=show_purview_labels,
-            x=[causes_x[i] for i in distinctions_changed_indices],
-            y=[causes_y[i] for i in distinctions_changed_indices],
-            z=[causes_z[i] + (vertex_size_range[1] / 10 ** 3 + labels_z_offset) for i in distinctions_changed_indices],
+            x=[causes_x[i] for i in purviews_changed_mechanisms_indices],
+            y=[causes_y[i] for i in purviews_changed_mechanisms_indices],
+            z=[causes_z[i] + (vertex_size_range[1] / 10 ** 3 + labels_z_offset) for i in purviews_changed_mechanisms_indices],
             mode="text",
-            text=[cause_purview_labels[i] for i in distinctions_changed_indices],
+            text=[cause_purview_labels[i] for i in purviews_changed_mechanisms_indices],
             textposition=purview_label_position,
             name="Changed Cause Purviews",
             showlegend=True,
             textfont=dict(size=purview_labels_size, color="red"),
             hoverinfo="text",
-            hovertext=[causes_hovertext[i] for i in distinctions_changed_indices],
+            hovertext=[causes_hovertext[i] for i in purviews_changed_mechanisms_indices],
             hoverlabel=dict(bgcolor="red"),
         )
         fig.add_trace(changed_labels_cause_purviews_trace)  
@@ -1995,17 +2003,17 @@ def plot_ces_epicycles(
     elif distinctions_lost and relations_lost or show_lost:
         lost_labels_effect_purviews_trace = go.Scatter3d(
             visible=show_purview_labels,
-            x=[effects_x[i] for i in distinctions_lost_indices],
-            y=[effects_y[i] for i in distinctions_lost_indices],
-            z=[effects_z[i] + (vertex_size_range[1] / 10 ** 3 + labels_z_offset) for i in distinctions_lost_indices],
+            x=[effects_x[i] for i in purviews_lost_mechanisms_indices],
+            y=[effects_y[i] for i in purviews_lost_mechanisms_indices],
+            z=[effects_z[i] + (vertex_size_range[1] / 10 ** 3 + labels_z_offset) for i in purviews_lost_mechanisms_indices],
             mode="text",
-            text=[effect_purview_labels[i] for i in distinctions_lost_indices],
+            text=[effect_purview_labels[i] for i in purviews_lost_mechanisms_indices],
             textposition=purview_label_position,
             name="Lost Effect Purviews",
             showlegend=True,
             textfont=dict(size=purview_labels_size, color="green"),
             hoverinfo="text",
-            hovertext=[effects_hovertext[i] for i in distinctions_lost_indices],
+            hovertext=[effects_hovertext[i] for i in purviews_lost_mechanisms_indices],
             hoverlabel=dict(bgcolor="green"),
         )
         fig.add_trace(lost_labels_effect_purviews_trace)    
@@ -2013,17 +2021,17 @@ def plot_ces_epicycles(
     elif distinctions_new and relations_new or show_new:
         new_labels_effect_purviews_trace = go.Scatter3d(
             visible=show_purview_labels,
-            x=[effects_x[i] for i in distinctions_new_indices],
-            y=[effects_y[i] for i in distinctions_new_indices],
-            z=[effects_z[i] + (vertex_size_range[1] / 10 ** 3 + labels_z_offset) for i in distinctions_new_indices],
+            x=[effects_x[i] for i in purviews_new_mechanisms_indices],
+            y=[effects_y[i] for i in purviews_new_mechanisms_indices],
+            z=[effects_z[i] + (vertex_size_range[1] / 10 ** 3 + labels_z_offset) for i in purviews_new_mechanisms_indices],
             mode="text",
-            text=[effect_purview_labels[i] for i in distinctions_new_indices],
+            text=[effect_purview_labels[i] for i in purviews_new_mechanisms_indices],
             textposition=purview_label_position,
             name="New Effect Purviews",
             showlegend=True,
             textfont=dict(size=purview_labels_size, color="green"),
             hoverinfo="text",
-            hovertext=[effects_hovertext[i] for i in distinctions_new_indices],
+            hovertext=[effects_hovertext[i] for i in purviews_new_mechanisms_indices],
             hoverlabel=dict(bgcolor="green"),
         )
         fig.add_trace(new_labels_effect_purviews_trace)                
@@ -2031,17 +2039,17 @@ def plot_ces_epicycles(
     elif distinctions_changed and relations_changed:
         changed_labels_effect_purviews_trace = go.Scatter3d(
             visible=show_purview_labels,
-            x=[effects_x[i] for i in distinctions_changed_indices],
-            y=[effects_y[i] for i in distinctions_changed_indices],
-            z=[effects_z[i] + (vertex_size_range[1] / 10 ** 3 + labels_z_offset) for i in distinctions_changed_indices],
+            x=[effects_x[i] for i in purviews_changed_mechanisms_indices],
+            y=[effects_y[i] for i in purviews_changed_mechanisms_indices],
+            z=[effects_z[i] + (vertex_size_range[1] / 10 ** 3 + labels_z_offset) for i in purviews_changed_mechanisms_indices],
             mode="text",
-            text=[effect_purview_labels[i] for i in distinctions_changed_indices],
+            text=[effect_purview_labels[i] for i in purviews_changed_mechanisms_indices],
             textposition=purview_label_position,
             name="Changed Effect Purviews",
             showlegend=True,
             textfont=dict(size=purview_labels_size, color="green"),
             hoverinfo="text",
-            hovertext=[effects_hovertext[i] for i in distinctions_changed_indices],
+            hovertext=[effects_hovertext[i] for i in purviews_changed_mechanisms_indices],
             hoverlabel=dict(bgcolor="green"),
         )
         fig.add_trace(changed_labels_effect_purviews_trace)      
