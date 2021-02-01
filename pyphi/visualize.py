@@ -1460,6 +1460,7 @@ def plot_ces_epicycles(
         # purviews_new_labels = [make_label(mechanism, node_labels=subsystem.node_labels, bold=False, state=False) for mechanism in purviews_new_mechanisms]
         purviews_new_cause_labels = [label_purview(m,state=list(rel.maximal_state(m)[0])) for m in purviews_new if m.direction==CAUSE]        
         purviews_new_effect_labels = [label_purview(m,state=list(rel.maximal_state(m)[0])) for m in purviews_new if m.direction==EFFECT]        
+        relations_new_list = [[(m.mechanism,m.direction) for m in r[1].relata] for r in relations_new]
 
     if purviews_changed and relations_changed:
         distinctions_changed_mechanisms = [d.mechanism for d in distinctions_changed]
@@ -2620,7 +2621,7 @@ def plot_ces_epicycles(
 
                         fig.add_trace(intersection_two_relation_trace)
 
-                if show_lost or distinctions_lost and relations_lost:
+                if show_lost or distinctions_lost or purviews_lost or relations_lost:
 
                     if relation in relations_lost:
      
@@ -2662,29 +2663,9 @@ def plot_ces_epicycles(
 
                         fig.add_trace(remained_two_relation_trace)
 
-                if show_new or distinctions_new and relations_new:
+                if show_new or distinctions_new or purviews_new or relations_new:
 
-                    if relation in relations_new:
-     
-                        new_two_relation_trace = go.Scatter3d(
-                            visible=True,
-                            legendgroup="New 2-Relations",
-                            showlegend=True if new_2_relations_counter == 0 else False,
-                            x=two_relations_coords[0][r],
-                            y=two_relations_coords[1][r],
-                            z=two_relations_coords[2][r],
-                            mode="lines",
-                            # name=label_relation(relation),
-                            name="New 2-Relations",
-                            line_width=two_relations_sizes[r]*relations_new_edge_width_multiplier,
-                            line_color=relations_new_edge_color,
-                            hoverinfo="text",
-                            hovertext=hovertext_relation(relation),
-                        )
-                        new_2_relations_counter += 1
-
-                        fig.add_trace(new_two_relation_trace)
-                    else:        
+                    if [(m.mechanism,m.direction) for m in relation.relata] not in relations_new_list:        
                         remained_two_relation_trace = go.Scatter3d(
                             visible=True,
                             legendgroup="Remained 2-Relations",
@@ -2703,9 +2684,49 @@ def plot_ces_epicycles(
                         remained_2_relations_counter += 1
 
                         fig.add_trace(remained_two_relation_trace)
+
+                    # if [(m.mechanism,m.purview,m.direction) for m in relation.relata] in relations_new_list:
+     
+                    #     new_two_relation_trace = go.Scatter3d(
+                    #         visible=True,
+                    #         legendgroup="New 2-Relations",
+                    #         showlegend=True if new_2_relations_counter == 0 else False,
+                    #         x=two_relations_coords[0][r],
+                    #         y=two_relations_coords[1][r],
+                    #         z=two_relations_coords[2][r],
+                    #         mode="lines",
+                    #         # name=label_relation(relation),
+                    #         name="New 2-Relations",
+                    #         line_width=two_relations_sizes[r]*relations_new_edge_width_multiplier,
+                    #         line_color=relations_new_edge_color,
+                    #         hoverinfo="text",
+                    #         hovertext=hovertext_relation(relation),
+                    #     )
+                    #     new_2_relations_counter += 1
+
+                    #     fig.add_trace(new_two_relation_trace)
+                    # else:        
+                    #     remained_two_relation_trace = go.Scatter3d(
+                    #         visible=True,
+                    #         legendgroup="Remained 2-Relations",
+                    #         showlegend=True if remained_2_relations_counter == 0 else False,
+                    #         x=two_relations_coords[0][r],
+                    #         y=two_relations_coords[1][r],
+                    #         z=two_relations_coords[2][r],
+                    #         mode="lines",
+                    #         # name=label_relation(relation),
+                    #         name="Remained 2-Relations",
+                    #         line_width=relations_remained_edge_width_multiplier*two_relations_sizes[r],
+                    #         line_color=relations_remained_edge_color,
+                    #         hoverinfo="text",
+                    #         hovertext=hovertext_relation(relation),
+                    #     )
+                    #     remained_2_relations_counter += 1
+
+                    #     fig.add_trace(remained_two_relation_trace)
                 
-                if distinctions_changed and relations_changed:
-                    
+                if distinctions_changed or purviews_changed or relations_changed:      
+
                     if [(m.mechanism,m.purview,m.direction) for m in relation.relata] not in relations_changed_list:        
                         remained_two_relation_trace = go.Scatter3d(
                             visible=True,
@@ -2731,7 +2752,7 @@ def plot_ces_epicycles(
 
                 # Make all 2-relations traces and legendgroup
                 edge_two_relation_trace = go.Scatter3d(
-                    visible='legendonly' if selected_compound_purview or show_lost or show_new or selected_mechanism_qfolds or intersect_mechanisms or distinctions_lost or distinctions_new or distinctions_changed else show_edges,
+                    visible='legendonly' if selected_compound_purview or show_lost or show_new or selected_mechanism_qfolds or intersect_mechanisms or purviews_lost or purviews_new or purviews_changed else show_edges,
                     legendgroup="All 2-Relations",
                     showlegend=True if r == 0 else False,
                     x=two_relations_coords[0][r],
@@ -2766,27 +2787,58 @@ def plot_ces_epicycles(
                     )
 
                     fig.add_trace(edge_two_relation_trace)
-    
-    
-        # if [(m.mechanism,m.purview,m.direction) for m in relation.relata] not in relations_changed_list:        
-        #     remained_two_relation_trace = go.Scatter3d(
-        #         visible=True,
-        #         legendgroup="Remained 2-Relations",
-        #         showlegend=True if remained_2_relations_counter == 0 else False,
-        #         x=two_relations_coords[0][r],
-        #         y=two_relations_coords[1][r],
-        #         z=two_relations_coords[2][r],
-        #         mode="lines",
-        #         # name=label_relation(relation),
-        #         name="Remained 2-Relations",
-        #         line_width=relations_remained_edge_width_multiplier*two_relations_sizes[r],
-        #         line_color=relations_remained_edge_color,
-        #         hoverinfo="text",
-        #         hovertext=hovertext_relation(relation),
-        #     )
-        #     remained_2_relations_counter += 1
 
-        #     fig.add_trace(remained_two_relation_trace)
+            if relations_new:
+                new_two_relations_sizes = normalize_sizes(
+                edge_size_range[0], edge_size_range[1], [r[2] for r in relations_new]
+            )
+
+            for i,new in enumerate(relations_new):
+                r=new[0]
+                if len(new[1].mechanisms)==2:
+                    new_two_relation_trace = go.Scatter3d(
+                    visible=True,
+                    legendgroup="New 2-Relations",
+                    showlegend=True if new_2_relations_counter == 0 else False,
+                    x=two_relations_coords[0][r],
+                    y=two_relations_coords[1][r],
+                    z=two_relations_coords[2][r],
+                    mode="lines",
+                    # name=label_relation(relation),
+                    name="New 2-Relations",
+                    line_width=new_two_relations_sizes[i]*relations_new_edge_width_multiplier,
+                    line_color=relations_new_edge_color,
+                    # hoverinfo="text",
+                    # hovertext=hovertext_relation(change[1]),
+                    )
+                    new_2_relations_counter += 1
+
+                    fig.add_trace(new_two_relation_trace)
+
+            for change in relations_changed:
+                phi_delta=change[2]
+                r=change[0]
+                if len(change[1].mechanisms)==2:
+                    changed_two_relation_trace = go.Scatter3d(
+                    visible=True,
+                    legendgroup="Changed 2-Relations",
+                    showlegend=True if changed_2_relations_counter == 0 else False,
+                    x=two_relations_coords[0][r],
+                    y=two_relations_coords[1][r],
+                    z=two_relations_coords[2][r],
+                    mode="lines",
+                    # name=label_relation(relation),
+                    name="Changed 2-Relations",
+                    line_width=two_relations_sizes[r]*phi_delta*relations_changed_edge_width_multiplier,
+                    line_color=relations_changed_up_edge_color if phi_delta>1 else relations_changed_down_edge_color,
+                    # hoverinfo="text",
+                    # hovertext=hovertext_relation(change[1]),
+                    )
+                    changed_2_relations_counter += 1
+
+                    fig.add_trace(changed_two_relation_trace)
+                            
+                    #TODO else for changed 3-relations
 
     # 3-relations
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -3102,30 +3154,7 @@ def plot_ces_epicycles(
                 )
                 fig.add_trace(triangle_three_relation_trace)        
 
-    # if distinctions_changed and relations_changed:
-    #     for change in relations_changed:
-    #         phi_delta=change[2]
-    #         r=change[0]
-    #         if len(change[1].mechanisms)==2:
-    #             changed_two_relation_trace = go.Scatter3d(
-    #                 visible=True,
-    #                 legendgroup="Changed 2-Relations",
-    #                 showlegend=True if changed_2_relations_counter == 0 else False,
-    #                 x=two_relations_coords[0][r],
-    #                 y=two_relations_coords[1][r],
-    #                 z=two_relations_coords[2][r],
-    #                 mode="lines",
-    #                 # name=label_relation(relation),
-    #                 name="Changed 2-Relations",
-    #                 line_width=two_relations_sizes[r]*phi_delta*relations_changed_edge_width_multiplier,
-    #                 line_color=relations_changed_up_edge_color if phi_delta>1 else relations_changed_down_edge_color,
-    #                 hoverinfo="text",
-    #                 hovertext=hovertext_relation(change[1]),
-    #             )
-    #             changed_2_relations_counter += 1
 
-    #             fig.add_trace(changed_two_relation_trace)
-    #         #TODO else for changed 3-relations
 
 
     # Add image to xy-plane
