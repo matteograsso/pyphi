@@ -1268,6 +1268,9 @@ def plot_ces_epicycles(
     relations_changed_down_surface_colorscale='blues',
 
     selected_compound_purview=None,
+    selected_compound_purview_subtext_only=False,
+    selected_compound_purview_supertext_only=False,
+
     
 ):
    
@@ -1443,7 +1446,23 @@ def plot_ces_epicycles(
         selected_compound_purview_relations = [r for r in relations if any([m in r.mechanisms for m in selected_compound_purview])]
         selected_compound_purview_mices = list(set(flatten([[mice for relation in selected_compound_purview_relations if mice in relation.relata] for mice in separated_ces])))
         selected_compound_purview_linked_mices = rel.separate_ces([ces[i] for i in selected_compound_purview_indices])
-
+        
+        selected_compound_purview_subtext_mices = []
+        selected_compound_purview_supertext_mices = []
+        for relation in relations:
+            if selected_compound_purview[0] in relation.mechanisms:
+                for mice in relation.relata:
+                    if mice.mechanism==selected_compound_purview[0]:
+                        mice0 = mice
+                    else:
+                        mice1 = mice
+                purview0 = mice0.purview
+                purview1 = mice1.purview
+                relation_purview = relation.purview
+                if purview0 != purview1 and all(n in purview1 for n in purview0):
+                    selected_compound_purview_supertext_mices.append(mice1)
+                if purview0 != purview1 and all(n in purview0 for n in purview1):
+                    selected_compound_purview_subtext_mices.append(mice1)
 
     if purviews_lost and relations_lost or show_lost:
         distinctions_lost_mechanisms = [d.mechanism for d in distinctions_lost]
@@ -1849,7 +1868,12 @@ def plot_ces_epicycles(
         fig.add_trace(selected_mechanism_labels_cause_purviews_trace)
 
     elif selected_compound_purview:
-        selected_compound_purview_causes_indices = [i for i,purview in enumerate(separated_ces[::2]) if purview in selected_compound_purview_mices]        
+        if selected_compound_purview_subtext_only:
+            selected_compound_purview_causes_indices = [i for i,purview in enumerate(separated_ces[::2]) if purview in selected_compound_purview_subtext_mices]
+        elif selected_compound_purview_supertext_only:
+            selected_compound_purview_causes_indices = [i for i,purview in enumerate(separated_ces[::2]) if purview in selected_compound_purview_supertext_mices]
+        else:
+            selected_compound_purview_causes_indices = [i for i,purview in enumerate(separated_ces[::2]) if purview in selected_compound_purview_mices]        
         selected_compound_purview_labels_cause_purviews_trace = go.Scatter3d(
             visible=show_purview_labels,
             x=[causes_x[i] for i in selected_compound_purview_causes_indices],
@@ -1981,7 +2005,12 @@ def plot_ces_epicycles(
         fig.add_trace(labels_effect_purviews_trace)
 
     elif selected_compound_purview:
-        selected_compound_purview_effects_indices = [i for i,purview in enumerate(separated_ces[1::2]) if purview in selected_compound_purview_mices]        
+        if selected_compound_purview_subtext_only:
+            selected_compound_purview_effects_indices = [i for i,purview in enumerate(separated_ces[1::2]) if purview in selected_compound_purview_subtext_mices]
+        elif selected_compound_purview_supertext_only:
+            selected_compound_purview_effects_indices = [i for i,purview in enumerate(separated_ces[1::2]) if purview in selected_compound_purview_supertext_mices]
+        else:
+            selected_compound_purview_effects_indices = [i for i,purview in enumerate(separated_ces[1::2]) if purview in selected_compound_purview_mices]        
         selected_compound_purview_labels_effect_purviews_trace = go.Scatter3d(
             visible=show_purview_labels,
             x=[effects_x[i] for i in selected_compound_purview_effects_indices],
