@@ -1227,7 +1227,7 @@ def plot_ces_epicycles(
     distinctions_lost_mechanism_hoverlabel_color='blue',
     lost_link_color='blue',
     relations_lost_edge_color='blue',
-    relations_lost_edge_width_multiplier=.5,
+    relations_lost_edge_width_multiplier=1,
     relations_lost_surface_colorscale='blues',
 
     show_new=False,
@@ -1238,7 +1238,7 @@ def plot_ces_epicycles(
     distinctions_new_mechanism_hoverlabel_color='orange',
     new_link_color='orange',
     relations_new_edge_color='orange',
-    relations_new_edge_width_multiplier=3,
+    relations_new_edge_width_multiplier=1,
     relations_new_surface_colorscale='oranges',
     
     distinctions_remained=[],
@@ -1255,13 +1255,15 @@ def plot_ces_epicycles(
     purviews_changed=[],
     distinctions_changed=[],
     relations_changed=[],
+    show_increase_only=False,
+    show_decrease_only=False,
     show_distinctions_changed_mechanisms=True,
     distinctions_changed_mechanism_color='black',
     changed_up_link_color='orange',
     changed_down_link_color='blue',
     relations_changed_up_edge_color='orange',
     relations_changed_down_edge_color='blue',
-    relations_changed_edge_width_multiplier=1.25,
+    relations_changed_edge_width_multiplier=1,
     relations_changed_up_surface_colorscale='oranges',
     relations_changed_down_surface_colorscale='blues',
 
@@ -1555,7 +1557,7 @@ def plot_ces_epicycles(
                 text=distinctions_lost_text,
                 name="Lost Distinctions",
                 showlegend=True,
-                textfont=dict(size=mechanism_labels_size, color=distinctions_lost_mechanism_color),
+                textfont=dict(size=mechanism_labels_size, color=distinctions_lost_mechanism_color if distinctions_lost_mechanism_color else 'black'),
                 textposition=mechanism_label_position,
                 hoverinfo="text",
                 hovertext=mechanism_hovertext,
@@ -1574,7 +1576,7 @@ def plot_ces_epicycles(
                 text=distinctions_new_text,
                 name="New Distinctions",
                 showlegend=True,
-                textfont=dict(size=mechanism_labels_size, color=distinctions_new_mechanism_color),
+                textfont=dict(size=mechanism_labels_size, color=distinctions_new_mechanism_color if distinctions_new_mechanism_color else 'black'),
                 textposition=mechanism_label_position,
                 hoverinfo="text",
                 hovertext=mechanism_hovertext,
@@ -1593,7 +1595,7 @@ def plot_ces_epicycles(
                 text=distinctions_remained_text,
                 name="Remained Distinctions",
                 showlegend=True,
-                textfont=dict(size=mechanism_labels_size, color=distinctions_remained_mechanism_color),
+                textfont=dict(size=mechanism_labels_size, color=distinctions_remained_mechanism_color if distinctions_remained_mechanism_color else 'black'),
                 textposition=mechanism_label_position,
                 hoverinfo="text",
                 hovertext=mechanism_hovertext,
@@ -1613,7 +1615,7 @@ def plot_ces_epicycles(
                     text=distinctions_changed_text,
                     name="Changed Distinctions",
                     showlegend=True,
-                    textfont=dict(size=mechanism_labels_size, color=distinctions_changed_mechanism_color),
+                    textfont=dict(size=mechanism_labels_size, color=distinctions_changed_mechanism_color if distinctions_changed_mechanism_color else black),
                     textposition=mechanism_label_position,
                     hoverinfo="text",
                     hovertext=mechanism_hovertext,
@@ -2287,7 +2289,7 @@ def plot_ces_epicycles(
                             mode="lines",
                             name="Lost Links",
                             line_width=links_widths[i],
-                            line_color=lost_link_color,
+                            line_color=lost_link_color if lost_link_color else "brown",
                             hoverinfo="skip",
                             # hovertext=hovertext_relation(relation),
                         )
@@ -2323,7 +2325,7 @@ def plot_ces_epicycles(
                             mode="lines",
                             name="New Links",
                             line_width=links_widths[i],
-                            line_color=new_link_color,
+                            line_color=new_link_color if new_link_color else "brown",
                             hoverinfo="skip",
                             # hovertext=hovertext_relation(relation),
                         )
@@ -2347,7 +2349,7 @@ def plot_ces_epicycles(
                         remained_links_counter += 1
                         fig.add_trace(remained_link_trace)
 
-                if distinctions_changed or purviews_changed or relations_changed:
+                if (distinctions_changed or purviews_changed or relations_changed) and not (show_decrease_only or show_increase_only):
                     for mice1 in purviews_changed:           
 
                         if (mice.mechanism,mice.purview,mice.direction)==(mice1.mechanism,mice1.purview,mice1.direction) and mice.phi!=mice1.phi or (mice.mechanism,mice.purview,mice.direction)==(mice1.mechanism,mice1.purview,mice1.direction) and list(rel.maximal_state(mice)[0])!=list(rel.maximal_state(mice1)[0]):
@@ -2368,6 +2370,86 @@ def plot_ces_epicycles(
                             )
                             changed_links_counter += 1
                             fig.add_trace(changed_link_trace)
+                    if (mice.mechanism,mice.purview,mice.direction) not in purviews_changed_mices_list:
+                        remained_link_trace = go.Scatter3d(
+                            visible=True,
+                            legendgroup="Remained Links",
+                            showlegend=True if remained_links_counter == 0 else False,
+                            x=coords_links[0][i],
+                            y=coords_links[1][i],
+                            z=coords_links[2][i],
+                            mode="lines",
+                            name="Remained Links",
+                            line_width=links_widths[i],
+                            line_color=remained_link_color,
+                            hoverinfo="skip",
+                            # hovertext=hovertext_relation(relation),
+                        )
+                        remained_links_counter += 1
+                        fig.add_trace(remained_link_trace)
+
+                if (distinctions_changed or purviews_changed or relations_changed) and show_decrease_only:
+                    for mice1 in purviews_changed:           
+
+                        if (mice.mechanism,mice.purview,mice.direction)==(mice1.mechanism,mice1.purview,mice1.direction) and mice.phi!=mice1.phi or (mice.mechanism,mice.purview,mice.direction)==(mice1.mechanism,mice1.purview,mice1.direction) and list(rel.maximal_state(mice)[0])!=list(rel.maximal_state(mice1)[0]):
+                            phi_delta=mice1.phi/mice.phi                    
+                            if phi_delta<1:
+                                changed_link_trace = go.Scatter3d(  
+                                    visible=True,
+                                    legendgroup="Decreased Links",
+                                    showlegend=True if changed_links_counter == 0 else False,
+                                    x=coords_links[0][i],
+                                    y=coords_links[1][i],
+                                    z=coords_links[2][i],
+                                    mode="lines",
+                                    name="Decreased Links",
+                                    line_width=min(max(min(link_width_range),links_widths[i]*phi_delta),max(link_width_range)),
+                                    line_color=changed_down_link_color if changed_down_link_color else "brown",
+                                    hoverinfo="skip",
+                                    # hovertext=hovertext_relation(relation),
+                                )
+                                changed_links_counter += 1
+                                fig.add_trace(changed_link_trace)
+                    if (mice.mechanism,mice.purview,mice.direction) not in purviews_changed_mices_list:
+                        remained_link_trace = go.Scatter3d(
+                            visible=True,
+                            legendgroup="Remained Links",
+                            showlegend=True if remained_links_counter == 0 else False,
+                            x=coords_links[0][i],
+                            y=coords_links[1][i],
+                            z=coords_links[2][i],
+                            mode="lines",
+                            name="Remained Links",
+                            line_width=links_widths[i],
+                            line_color=remained_link_color,
+                            hoverinfo="skip",
+                            # hovertext=hovertext_relation(relation),
+                        )
+                        remained_links_counter += 1
+                        fig.add_trace(remained_link_trace)
+
+                if (distinctions_changed or purviews_changed or relations_changed) and show_increase_only:
+                    for mice1 in purviews_changed:           
+
+                        if (mice.mechanism,mice.purview,mice.direction)==(mice1.mechanism,mice1.purview,mice1.direction) and mice.phi!=mice1.phi or (mice.mechanism,mice.purview,mice.direction)==(mice1.mechanism,mice1.purview,mice1.direction) and list(rel.maximal_state(mice)[0])!=list(rel.maximal_state(mice1)[0]):
+                            phi_delta=mice1.phi/mice.phi                    
+                            if phi_delta>1:
+                                changed_link_trace = go.Scatter3d(  
+                                    visible=True,
+                                    legendgroup="Increased Links",
+                                    showlegend=True if changed_links_counter == 0 else False,
+                                    x=coords_links[0][i],
+                                    y=coords_links[1][i],
+                                    z=coords_links[2][i],
+                                    mode="lines",
+                                    name="Increased Links",
+                                    line_width=min(max(min(link_width_range),links_widths[i]*phi_delta),max(link_width_range)),
+                                    line_color=changed_up_link_color if changed_up_link_color else "brown",
+                                    hoverinfo="skip",
+                                    # hovertext=hovertext_relation(relation),
+                                )
+                                changed_links_counter += 1
+                                fig.add_trace(changed_link_trace)
                     if (mice.mechanism,mice.purview,mice.direction) not in purviews_changed_mices_list:
                         remained_link_trace = go.Scatter3d(
                             visible=True,
@@ -2636,7 +2718,7 @@ def plot_ces_epicycles(
                             # name=label_relation(relation),
                             name="Lost 2-Relations",
                             line_width=two_relations_sizes[r]*relations_lost_edge_width_multiplier,
-                            line_color=relations_lost_edge_color,
+                            line_color=relations_lost_edge_color if relations_lost_edge_color else relation_color,
                             hoverinfo="text",
                             hovertext=hovertext_relation(relation),
                         )
@@ -2795,7 +2877,9 @@ def plot_ces_epicycles(
 
             for i,new in enumerate(relations_new):
                 r=new[0]
-                if len(new[1].mechanisms)==2:
+                relation=new[1]
+                if len(relation.mechanisms)==2:
+                    relation_color = get_edge_color(relation, colorcode_2_relations)
                     new_two_relation_trace = go.Scatter3d(
                     visible=True,
                     legendgroup="New 2-Relations",
@@ -2807,7 +2891,7 @@ def plot_ces_epicycles(
                     # name=label_relation(relation),
                     name="New 2-Relations",
                     line_width=new_two_relations_sizes[i]*relations_new_edge_width_multiplier,
-                    line_color=relations_new_edge_color,
+                    line_color=relations_new_edge_color if relations_new_edge_color else relation_color,
                     # hoverinfo="text",
                     # hovertext=hovertext_relation(change[1]),
                     )
@@ -2818,25 +2902,67 @@ def plot_ces_epicycles(
             for change in relations_changed:
                 phi_delta=change[2]
                 r=change[0]
-                if len(change[1].mechanisms)==2:
-                    changed_two_relation_trace = go.Scatter3d(
-                    visible=True,
-                    legendgroup="Changed 2-Relations",
-                    showlegend=True if changed_2_relations_counter == 0 else False,
-                    x=two_relations_coords[0][r],
-                    y=two_relations_coords[1][r],
-                    z=two_relations_coords[2][r],
-                    mode="lines",
-                    # name=label_relation(relation),
-                    name="Changed 2-Relations",
-                    line_width=two_relations_sizes[r]*phi_delta*relations_changed_edge_width_multiplier,
-                    line_color=relations_changed_up_edge_color if phi_delta>1 else relations_changed_down_edge_color,
-                    # hoverinfo="text",
-                    # hovertext=hovertext_relation(change[1]),
-                    )
-                    changed_2_relations_counter += 1
+                relation=change[1]
+                if len(relation.mechanisms)==2:
+                    relation_color = get_edge_color(relation, colorcode_2_relations)                
+                    if not (show_decrease_only or show_increase_only):
+                        changed_two_relation_trace = go.Scatter3d(
+                            visible=True,
+                            legendgroup="Changed 2-Relations",
+                            showlegend=True if changed_2_relations_counter == 0 else False,
+                            x=two_relations_coords[0][r],
+                            y=two_relations_coords[1][r],
+                            z=two_relations_coords[2][r],
+                            mode="lines",
+                            # name=label_relation(relation),
+                            name="Changed 2-Relations",
+                            line_width=two_relations_sizes[r]*phi_delta*relations_changed_edge_width_multiplier,
+                            line_color=relations_changed_up_edge_color if phi_delta>1 else relations_changed_down_edge_color,
+                            # hoverinfo="text",
+                            # hovertext=hovertext_relation(change[1]),
+                            )
+                        changed_2_relations_counter += 1
 
-                    fig.add_trace(changed_two_relation_trace)
+                        fig.add_trace(changed_two_relation_trace)
+                    else:
+                        if show_decrease_only and phi_delta<1:
+                            changed_two_relation_trace = go.Scatter3d(
+                                visible=True,
+                                legendgroup="Decreased 2-Relations",
+                                showlegend=True if changed_2_relations_counter == 0 else False,
+                                x=two_relations_coords[0][r],
+                                y=two_relations_coords[1][r],
+                                z=two_relations_coords[2][r],
+                                mode="lines",
+                                # name=label_relation(relation),
+                                name="Decreased 2-Relations",
+                                line_width=two_relations_sizes[r]*phi_delta*relations_changed_edge_width_multiplier,
+                                line_color=relation_color,
+                                # hoverinfo="text",
+                                # hovertext=hovertext_relation(change[1]),
+                                )
+                            changed_2_relations_counter += 1
+                            fig.add_trace(changed_two_relation_trace)
+
+                        elif show_increase_only and phi_delta>1:
+                            changed_two_relation_trace = go.Scatter3d(
+                                visible=True,
+                                legendgroup="Increased 2-Relations",
+                                showlegend=True if changed_2_relations_counter == 0 else False,
+                                x=two_relations_coords[0][r],
+                                y=two_relations_coords[1][r],
+                                z=two_relations_coords[2][r],
+                                mode="lines",
+                                # name=label_relation(relation),
+                                name="Increased 2-Relations",
+                                line_width=two_relations_sizes[r]*phi_delta*relations_changed_edge_width_multiplier,
+                                line_color=relation_color,
+                                # hoverinfo="text",
+                                # hovertext=hovertext_relation(change[1]),
+                                )
+                            changed_2_relations_counter += 1
+
+                            fig.add_trace(changed_two_relation_trace)
                             
                     #TODO else for changed 3-relations
 
