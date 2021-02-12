@@ -1449,6 +1449,8 @@ def plot_ces_epicycles(
         
         selected_compound_purview_subtext_mices = []
         selected_compound_purview_supertext_mices = []
+        selected_compound_purview_subtext_relations = []
+        selected_compound_purview_supertext_relations = []
         for relation in relations:
             if selected_compound_purview[0] in relation.mechanisms:
                 for mice in relation.relata:
@@ -1461,8 +1463,10 @@ def plot_ces_epicycles(
                 relation_purview = relation.purview
                 if purview0 != purview1 and all(n in purview1 for n in purview0):
                     selected_compound_purview_supertext_mices.append(mice1)
+                    selected_compound_purview_supertext_relations.append(relation)
                 if purview0 != purview1 and all(n in purview0 for n in purview1):
                     selected_compound_purview_subtext_mices.append(mice1)
+                    selected_compound_purview_subtext_relations.append(relation)
 
     if purviews_lost and relations_lost or show_lost:
         distinctions_lost_mechanisms = [d.mechanism for d in distinctions_lost]
@@ -1869,9 +1873,9 @@ def plot_ces_epicycles(
 
     elif selected_compound_purview:
         if selected_compound_purview_subtext_only:
-            selected_compound_purview_causes_indices = [i for i,purview in enumerate(separated_ces[::2]) if purview in selected_compound_purview_subtext_mices]
+            selected_compound_purview_causes_indices = [i for i,purview in enumerate(separated_ces[::2]) if purview in list(selected_compound_purview_subtext_mices)+list(selected_compound_purview_linked_mices)]
         elif selected_compound_purview_supertext_only:
-            selected_compound_purview_causes_indices = [i for i,purview in enumerate(separated_ces[::2]) if purview in selected_compound_purview_supertext_mices]
+            selected_compound_purview_causes_indices = [i for i,purview in enumerate(separated_ces[::2]) if purview in list(selected_compound_purview_supertext_mices)+list(selected_compound_purview_linked_mices)]
         else:
             selected_compound_purview_causes_indices = [i for i,purview in enumerate(separated_ces[::2]) if purview in selected_compound_purview_mices]        
         selected_compound_purview_labels_cause_purviews_trace = go.Scatter3d(
@@ -2006,9 +2010,9 @@ def plot_ces_epicycles(
 
     elif selected_compound_purview:
         if selected_compound_purview_subtext_only:
-            selected_compound_purview_effects_indices = [i for i,purview in enumerate(separated_ces[1::2]) if purview in selected_compound_purview_subtext_mices]
+            selected_compound_purview_effects_indices = [i for i,purview in enumerate(separated_ces[1::2]) if purview in list(selected_compound_purview_subtext_mices)+list(selected_compound_purview_linked_mices)]
         elif selected_compound_purview_supertext_only:
-            selected_compound_purview_effects_indices = [i for i,purview in enumerate(separated_ces[1::2]) if purview in selected_compound_purview_supertext_mices]
+            selected_compound_purview_effects_indices = [i for i,purview in enumerate(separated_ces[1::2]) if purview in list(selected_compound_purview_supertext_mices)+list(selected_compound_purview_linked_mices)]
         else:
             selected_compound_purview_effects_indices = [i for i,purview in enumerate(separated_ces[1::2]) if purview in selected_compound_purview_mices]        
         selected_compound_purview_labels_effect_purviews_trace = go.Scatter3d(
@@ -2221,6 +2225,8 @@ def plot_ces_epicycles(
     remained_2_relations_counter=0
     remained_3_relations_counter=0
     compound_purview_2_relations_counter=0
+    compound_purview_2_relations_subtext_counter=0
+    compound_purview_2_relations_supertext_counter=0
 
     # Plot distinction links (edge connecting cause, mechanism, effect vertices)
     coords_links = (
@@ -2611,23 +2617,6 @@ def plot_ces_epicycles(
                         relation_color,
                     )
 
-                # if selected_compound_purview:
-                    
-                #     legend_mechanisms = plot_selected_mechanism_qfolds2D(
-                #         r,
-                #         relation,
-                #         selected_compound_purview,
-                #         show_edges,
-                #         node_labels,
-                #         go,
-                #         fig,
-                #         two_relations_coords,
-                #         two_relations_sizes,
-                #         legend_mechanisms,
-                #         relation_color,
-                #     )
-
-
                 # Make compound purview contexts traces and legendgroups
                 if show_compound_purview_qfolds:
 
@@ -2710,27 +2699,69 @@ def plot_ces_epicycles(
 
                 if selected_compound_purview:
 
-                    if any(mice for mice in selected_compound_purview_linked_mices if mice in relation.relata):
-     
-                        intersection_two_relation_trace = go.Scatter3d(
-                            visible=True,
-                            legendgroup=f"Selected Compound Purview 2-Relations",
-                            showlegend=True if compound_purview_2_relations_counter == 0 else False,
-                            x=two_relations_coords[0][r],
-                            y=two_relations_coords[1][r],
-                            z=two_relations_coords[2][r],
-                            mode="lines",
-                            # name=label_relation(relation),
-                            name=f"{''.join(selected_compound_purview_labels)} Compound Purview 2-Relations",
-                            line_width=two_relations_sizes[r],
-                            line_color=composition_color if composition else relation_color,
-                            hoverinfo="text",
-                            hovertext=hovertext_relation(relation),
-                        )
+                    if any(mice for mice in selected_compound_purview_linked_mices if mice in relation.relata):                        
+                        if selected_compound_purview_subtext_only and relation in selected_compound_purview_subtext_relations:
+                            selected_compound_purview_two_relation_trace = go.Scatter3d(
+                                visible=True,
+                                legendgroup=f"Selected Compound Purview 2-Relations Subtext",
+                                showlegend=True if compound_purview_2_relations_subtext_counter == 0 else False,
+                                x=two_relations_coords[0][r],
+                                y=two_relations_coords[1][r],
+                                z=two_relations_coords[2][r],
+                                mode="lines",
+                                # name=label_relation(relation),
+                                name=f"{''.join(selected_compound_purview_labels)} Compound Purview 2-Relations Subtext",
+                                line_width=two_relations_sizes[r],
+                                line_color=composition_color if composition else relation_color,
+                                hoverinfo="text",
+                                hovertext=hovertext_relation(relation),
+                            )
 
-                        compound_purview_2_relations_counter += 1
+                            compound_purview_2_relations_subtext_counter += 1
 
-                        fig.add_trace(intersection_two_relation_trace)
+                            fig.add_trace(selected_compound_purview_two_relation_trace) 
+
+                        elif selected_compound_purview_supertext_only and relation in selected_compound_purview_supertext_relations:
+                            selected_compound_purview_two_relation_trace = go.Scatter3d(
+                                visible=True,
+                                legendgroup=f"Selected Compound Purview 2-Relations Supertext",
+                                showlegend=True if compound_purview_2_relations_supertext_counter == 0 else False,
+                                x=two_relations_coords[0][r],
+                                y=two_relations_coords[1][r],
+                                z=two_relations_coords[2][r],
+                                mode="lines",
+                                # name=label_relation(relation),
+                                name=f"{''.join(selected_compound_purview_labels)} Compound Purview 2-Relations Supertext",
+                                line_width=two_relations_sizes[r],
+                                line_color=composition_color if composition else relation_color,
+                                hoverinfo="text",
+                                hovertext=hovertext_relation(relation),
+                            )
+
+                            compound_purview_2_relations_supertext_counter += 1
+
+                            fig.add_trace(selected_compound_purview_two_relation_trace) 
+
+                        if not (selected_compound_purview_supertext_only or selected_compound_purview_subtext_only):
+                            selected_compound_purview_two_relation_trace = go.Scatter3d(
+                                visible=True,
+                                legendgroup=f"Selected Compound Purview 2-Relations",
+                                showlegend=True if compound_purview_2_relations_counter == 0 else False,
+                                x=two_relations_coords[0][r],
+                                y=two_relations_coords[1][r],
+                                z=two_relations_coords[2][r],
+                                mode="lines",
+                                # name=label_relation(relation),
+                                name=f"{''.join(selected_compound_purview_labels)} Compound Purview 2-Relations",
+                                line_width=two_relations_sizes[r],
+                                line_color=composition_color if composition else relation_color,
+                                hoverinfo="text",
+                                hovertext=hovertext_relation(relation),
+                            )
+
+                            compound_purview_2_relations_counter += 1
+
+                            fig.add_trace(selected_compound_purview_two_relation_trace)
 
                 if show_lost or distinctions_lost or purviews_lost or relations_lost:
 
