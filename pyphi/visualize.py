@@ -1418,7 +1418,11 @@ def plot_ces_epicycles(
     # Get mechanism and purview labels (Quickly!)
     # mechanism_labels = list(map(label_mechanism, ces))
     mechanism_labels = [
-        label_mechanism(mice, bold=mechanism_label_bold, state=subsystem.state)
+        label_mechanism(
+            mice,
+            bold=mechanism_label_bold,
+            state=subsystem.state if state_as_lettercase else False,
+        )
         for mice in separated_ces[::2]
     ]
     mechanism_state_labels = [
