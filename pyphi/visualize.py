@@ -1284,6 +1284,7 @@ def plot_ces_epicycles(
     selected_compound_purview=None,
     selected_compound_purview_subtext_only=False,
     selected_compound_purview_supertext_only=False,
+    space_distinction_size_only=False,
 ):
 
     # if intersect_mechanisms or selected_mechanism_qfolds or distinctions_lost or relations_lost:
@@ -1498,6 +1499,7 @@ def plot_ces_epicycles(
             for r in relations
             if any([m in r.mechanisms for m in selected_compound_purview])
         ]
+        
         selected_compound_purview_mices = list(
             set(
                 flatten(
@@ -1540,6 +1542,18 @@ def plot_ces_epicycles(
                 if purview0 != purview1 and all(n in purview0 for n in purview1):
                     selected_compound_purview_subtext_mices.append(mice1)
                     selected_compound_purview_subtext_relations.append(relation)
+        
+        if space_distinction_size_only:
+            selected_compound_purview_subtext_mices = [
+                mice 
+                for mice in selected_compound_purview_subtext_mices
+                if len(mice.purview)==1 or mice.mechanism in selected_compound_purview
+                ]
+            selected_compound_purview_subtext_relations = [
+                r
+                for r in selected_compound_purview_subtext_relations
+                if all([len(mice.purview)==1 or mice.mechanism in selected_compound_purview for mice in r.relata])
+            ]
 
     if purviews_lost and relations_lost or show_lost:
         distinctions_lost_mechanisms = [d.mechanism for d in distinctions_lost]
