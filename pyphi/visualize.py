@@ -1285,6 +1285,7 @@ def plot_ces_epicycles(
     selected_compound_purview_subtext_only=False,
     selected_compound_purview_supertext_only=False,
     space_distinction_size_only=False,
+    user_base_coords=None,
 ):
 
     # if intersect_mechanisms or selected_mechanism_qfolds or distinctions_lost or relations_lost:
@@ -1377,6 +1378,27 @@ def plot_ces_epicycles(
     for m, c, i in zip(all_purviews, base_vertices, range(len(all_purviews))):
         if m in mechanisms:
             base_coords.append(list(base_vertices[i]))
+
+    if user_base_coords is not None:
+        # translate and scale user base coords to fit the position and size of the base 
+        
+        # translate the coords
+        # find the center of user base coords
+        mean_x = np.mean([pos[0] for pos in user_base_coords])
+        mean_y = np.mean([pos[1] for pos in user_base_coords])
+        user_base_center_offset = (mean_x-base_center[0], mean_y-base_center[1])
+
+        translated_user_base_coords = [
+                (
+                    coord[0]-user_base_center_offset[0], 
+                    coord[1]-user_base_center_offset[1], 
+                    base[2]
+                ) 
+            for coord,base in zip(user_base_coords,base_coords[:N])
+            ]
+
+        # update base coords for the first order mechs
+        base_coords[:N] = translated_user_base_coords
 
     xm = [p[0] for p in base_coords]
     ym = [p[1] for p in base_coords]
