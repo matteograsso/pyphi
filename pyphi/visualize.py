@@ -1151,7 +1151,7 @@ def plot_ces_epicycles(
     purview_label_position="middle left",
     mechanism_state_labels_size=15,
     labels_z_offset=0,
-    states_z_offset=0,
+    states_z_offset=.1,
     purview_labels_size=15,
     purview_state_labels_size=15,
     show_mechanism_labels=True,
