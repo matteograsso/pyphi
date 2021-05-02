@@ -1149,16 +1149,16 @@ def plot_ces_epicycles(
     mechanism_labels_size=15,
     mechanism_label_position="top center",
     purview_label_position="middle left",
-    mechanism_state_labels_size=12,
+    mechanism_state_labels_size=15,
     labels_z_offset=0,
-    states_z_offset=0.15,
+    states_z_offset=0,
     purview_labels_size=15,
-    purview_state_labels_size=10,
+    purview_state_labels_size=15,
     show_mechanism_labels=True,
     show_links=True,
     show_mechanism_state_labels=False,
     show_purview_labels=True,
-    show_purview_state_labels=False,
+    show_purview_state_labels="legendonly",
     show_vertices_mechanisms=False,
     show_vertices_purviews=False,
     show_edges=True,
@@ -1205,8 +1205,8 @@ def plot_ces_epicycles(
     annotation_z_spacing_mechanisms=0.08,
     annotation_x_spacing=0,
     annotation_y_spacing=0,
-    show_chains=True,
-    show_chains_mesh=True,
+    show_chains='legendonly',
+    show_chains_mesh='legendonly',
     chain_width=3,
     chain_color="black",
     chain_dash="dash",
@@ -1380,22 +1380,22 @@ def plot_ces_epicycles(
             base_coords.append(list(base_vertices[i]))
 
     if user_base_coords is not None:
-        # translate and scale user base coords to fit the position and size of the base 
-        
+        # translate and scale user base coords to fit the position and size of the base
+
         # translate the coords
         # find the center of user base coords
         mean_x = np.mean([pos[0] for pos in user_base_coords])
         mean_y = np.mean([pos[1] for pos in user_base_coords])
-        user_base_center_offset = (mean_x-base_center[0], mean_y-base_center[1])
+        user_base_center_offset = (mean_x - base_center[0], mean_y - base_center[1])
 
         translated_user_base_coords = [
-                (
-                    coord[0]-user_base_center_offset[0], 
-                    coord[1]-user_base_center_offset[1], 
-                    base[2]
-                ) 
-            for coord,base in zip(user_base_coords,base_coords[:N])
-            ]
+            (
+                coord[0] - user_base_center_offset[0],
+                coord[1] - user_base_center_offset[1],
+                base[2],
+            )
+            for coord, base in zip(user_base_coords, base_coords[:N])
+        ]
 
         # update base coords for the first order mechs
         base_coords[:N] = translated_user_base_coords
@@ -1521,7 +1521,7 @@ def plot_ces_epicycles(
             for r in relations
             if any([m in r.mechanisms for m in selected_compound_purview])
         ]
-        
+
         selected_compound_purview_mices = list(
             set(
                 flatten(
@@ -1564,17 +1564,23 @@ def plot_ces_epicycles(
                 if purview0 != purview1 and all(n in purview0 for n in purview1):
                     selected_compound_purview_subtext_mices.append(mice1)
                     selected_compound_purview_subtext_relations.append(relation)
-        
+
         if space_distinction_size_only:
             selected_compound_purview_subtext_mices = [
-                mice 
+                mice
                 for mice in selected_compound_purview_subtext_mices
-                if len(mice.purview)==1 or mice.mechanism in selected_compound_purview
-                ]
+                if len(mice.purview) == 1 or mice.mechanism in selected_compound_purview
+            ]
             selected_compound_purview_subtext_relations = [
                 r
                 for r in selected_compound_purview_subtext_relations
-                if all([len(mice.purview)==1 or mice.mechanism in selected_compound_purview for mice in r.relata])
+                if all(
+                    [
+                        len(mice.purview) == 1
+                        or mice.mechanism in selected_compound_purview
+                        for mice in r.relata
+                    ]
+                )
             ]
 
     if purviews_lost and relations_lost or show_lost:
