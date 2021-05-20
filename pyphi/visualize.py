@@ -1145,7 +1145,7 @@ def plot_ces_epicycles(
     edge_size_range=(0.5, 3),
     surface_size_range=(0.001, 0.05),
     surface_colorscale="viridis",
-    plot_dimentions=None,
+    plot_dimensions=None,
     mechanism_labels_size=15,
     mechanism_label_position="top center",
     purview_label_position="middle left",
@@ -1288,6 +1288,9 @@ def plot_ces_epicycles(
     user_base_coords=None,
     user_mechanism_coords=None,
     user_purview_coords=None,
+    png_name=None,
+    showlegend=True,
+    axes_range=None
 ):
 
     # if intersect_mechanisms or selected_mechanism_qfolds or distinctions_lost or relations_lost:
@@ -4048,10 +4051,11 @@ def plot_ces_epicycles(
     #         (min(d) - 1, max(d) + 1)
     #         for d in (np.append(x, xm), np.append(y, ym), np.append(z, zm))
     #     ]
-    axes_range = [
-        (min(d) - 1, max(d) + 1)
-        for d in (np.append(x, xm), np.append(y, ym), np.append(z, zm))
-    ]
+    if axes_range is None:
+        axes_range = [
+            (min(d) - 1, max(d) + 1)
+            for d in (np.append(x, xm), np.append(y, ym), np.append(z, zm))
+        ]
 
     axes = [
         dict(
@@ -4071,7 +4075,7 @@ def plot_ces_epicycles(
     ]
 
     layout = go.Layout(
-        showlegend=True,
+        showlegend=showlegend,
         scene_xaxis=axes[0],
         scene_yaxis=axes[1],
         scene_zaxis=axes[2],
@@ -4088,8 +4092,8 @@ def plot_ces_epicycles(
             )
         ),
         autosize=autosize,
-        height=plot_dimentions[0] if plot_dimentions else None,
-        width=plot_dimentions[1] if plot_dimentions else None,
+        height=plot_dimensions[0] if plot_dimensions else None,
+        width=plot_dimensions[1] if plot_dimensions else None,
         paper_bgcolor=paper_bgcolor,
         plot_bgcolor=plot_bgcolor,
     )
@@ -4362,4 +4366,6 @@ def plot_ces_epicycles(
 
     if save_plot_to_html:
         plotly.io.write_html(fig, f"{network_name}_CES.html")
+    elif png_name is not None:
+        fig.write_image(png_name, width=plot_dimensions[0], height=plot_dimensions[1], scale=2)
     return fig
