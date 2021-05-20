@@ -1290,7 +1290,8 @@ def plot_ces_epicycles(
     user_purview_coords=None,
     png_name=None,
     showlegend=True,
-    axes_range=None
+    axes_range=None,
+    base_alphahull=-1,
 ):
 
     # if intersect_mechanisms or selected_mechanism_qfolds or distinctions_lost or relations_lost:
@@ -1409,14 +1410,14 @@ def plot_ces_epicycles(
     ym = [p[1] for p in base_coords]
     zm = [p[2] for p in base_coords]
 
-    
+
     if user_mechanism_coords:
         xm = user_mechanism_coords[0]
         ym = user_mechanism_coords[1]
         zm = user_mechanism_coords[2]
 
     if user_purview_coords is not None:
-        coords = user_purview_coords        
+        coords = user_purview_coords
 
     # Dimensionality reduction
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1970,6 +1971,7 @@ def plot_ces_epicycles(
         legendgroup="Mechanism base",
         showlegend=True,
         opacity=base_opacity,
+        alphahull=base_alphahull,
         colorscale=[base_color for x in xm],
         intensity=[base_intensity] * len(i_base),
         i=i_base,
