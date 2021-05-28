@@ -1151,7 +1151,7 @@ def plot_ces_epicycles(
     purview_label_position="middle left",
     mechanism_state_labels_size=15,
     labels_z_offset=0,
-    states_z_offset=.1,
+    states_z_offset=0.1,
     purview_labels_size=15,
     purview_state_labels_size=15,
     show_mechanism_labels=True,
@@ -1205,8 +1205,8 @@ def plot_ces_epicycles(
     annotation_z_spacing_mechanisms=0.08,
     annotation_x_spacing=0,
     annotation_y_spacing=0,
-    show_chains='legendonly',
-    show_chains_mesh='legendonly',
+    show_chains="legendonly",
+    show_chains_mesh="legendonly",
     chain_width=3,
     chain_color="black",
     chain_dash="dash",
@@ -1292,6 +1292,8 @@ def plot_ces_epicycles(
     showlegend=True,
     axes_range=None,
     base_alphahull=-1,
+    mechanisms_composition_color="grey",
+    purviews_composition_color="grey",
 ):
 
     # if intersect_mechanisms or selected_mechanism_qfolds or distinctions_lost or relations_lost:
@@ -1409,7 +1411,6 @@ def plot_ces_epicycles(
     xm = [p[0] for p in base_coords]
     ym = [p[1] for p in base_coords]
     zm = [p[2] for p in base_coords]
-
 
     if user_mechanism_coords:
         xm = user_mechanism_coords[0]
@@ -1953,7 +1954,10 @@ def plot_ces_epicycles(
             text=mechanism_labels,
             name="Mechanism Labels",
             showlegend=True,
-            textfont=dict(size=mechanism_labels_size, color="black"),
+            textfont=dict(
+                size=mechanism_labels_size,
+                color=mechanisms_composition_color if composition else "black",
+            ),
             textposition=mechanism_label_position,
             hoverinfo="text",
             hovertext=mechanism_hovertext,
@@ -2324,7 +2328,10 @@ def plot_ces_epicycles(
             textposition=purview_label_position,
             name="Cause Purview Labels",
             showlegend=True,
-            textfont=dict(size=purview_labels_size, color="red"),
+            textfont=dict(
+                size=purview_labels_size,
+                color=purviews_composition_color if composition else "red",
+            ),
             hoverinfo="text",
             hovertext=causes_hovertext,
             hoverlabel=dict(bgcolor="red"),
@@ -2504,7 +2511,10 @@ def plot_ces_epicycles(
             textposition=purview_label_position,
             name="Effect Purview Labels",
             showlegend=True,
-            textfont=dict(size=purview_labels_size, color="green"),
+            textfont=dict(
+                size=purview_labels_size,
+                color=purviews_composition_color if composition else "green",
+            ),
             hoverinfo="text",
             hovertext=effects_hovertext,
             hoverlabel=dict(bgcolor="green"),
@@ -4108,7 +4118,11 @@ def plot_ces_epicycles(
 
         # Make mechanism labels as annotations:
         mechanism_annotation_labels = [
-            label_mechanism(mice, bold=False, state=False)
+            label_mechanism(
+                mice,
+                bold=False,
+                state=subsystem.state if state_as_lettercase else False,
+            )
             for mice in separated_ces[::2]
         ]
         mechanism_label_text_colors = [
@@ -4123,7 +4137,10 @@ def plot_ces_epicycles(
         mech_alpha = (
             relative_phi(ces, mini=0.1, maxi=1)
             if annotation_alpha_from_mechanism_phi
-            else [annotations_alpha_mechanism_label,] * len(ces)
+            else [
+                annotations_alpha_mechanism_label,
+            ]
+            * len(ces)
         )
 
         if intersect_mechanisms:
@@ -4207,7 +4224,8 @@ def plot_ces_epicycles(
 
         # Make purview labels as annotations:
         purview_annotation_labels = [
-            label_purview(mice, state=False) for mice in separated_ces
+            label_purview(mice, state=subsystem.state if state_as_lettercase else False)
+            for mice in separated_ces
         ]
         purview_label_text_colors = [
             get_purview_label_text_color(mice, composition) for mice in separated_ces
@@ -4222,7 +4240,10 @@ def plot_ces_epicycles(
         purview_alpha = (
             relative_phi(separated_ces, mini=0.1, maxi=1)
             if annotation_alpha_from_purview_phi
-            else [annotations_alpha_purview_label,] * len(separated_ces)
+            else [
+                annotations_alpha_purview_label,
+            ]
+            * len(separated_ces)
         )
 
         if intersect_mechanisms:
@@ -4369,5 +4390,7 @@ def plot_ces_epicycles(
     if save_plot_to_html:
         plotly.io.write_html(fig, f"{network_name}_CES.html")
     elif png_name is not None:
-        fig.write_image(png_name, width=plot_dimensions[0], height=plot_dimensions[1], scale=2)
+        fig.write_image(
+            png_name, width=plot_dimensions[0], height=plot_dimensions[1], scale=2
+        )
     return fig
