@@ -1412,13 +1412,13 @@ def plot_ces_epicycles(
     ym = [p[1] for p in base_coords]
     zm = [p[2] for p in base_coords]
 
-    if user_mechanism_coords:
-        xm = user_mechanism_coords[0]
-        ym = user_mechanism_coords[1]
-        zm = user_mechanism_coords[2]
+    if user_mechanism_coords is not None:
+        xm = user_mechanism_coords[0, :]
+        ym = user_mechanism_coords[1, :]
+        zm = user_mechanism_coords[2, :]
 
     if user_purview_coords is not None:
-        coords = user_purview_coords
+        coords = user_purview_coords.transpose()
 
     # Dimensionality reduction
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -4137,10 +4137,7 @@ def plot_ces_epicycles(
         mech_alpha = (
             relative_phi(ces, mini=0.1, maxi=1)
             if annotation_alpha_from_mechanism_phi
-            else [
-                annotations_alpha_mechanism_label,
-            ]
-            * len(ces)
+            else [annotations_alpha_mechanism_label,] * len(ces)
         )
 
         if intersect_mechanisms:
@@ -4240,10 +4237,7 @@ def plot_ces_epicycles(
         purview_alpha = (
             relative_phi(separated_ces, mini=0.1, maxi=1)
             if annotation_alpha_from_purview_phi
-            else [
-                annotations_alpha_purview_label,
-            ]
-            * len(separated_ces)
+            else [annotations_alpha_purview_label,] * len(separated_ces)
         )
 
         if intersect_mechanisms:
@@ -4391,6 +4385,10 @@ def plot_ces_epicycles(
         plotly.io.write_html(fig, f"{network_name}_CES.html")
     elif png_name is not None:
         fig.write_image(
-            png_name, width=plot_dimensions[0], height=plot_dimensions[1], scale=2
+            png_name,
+            width=plot_dimensions[0] if plot_dimensions else None,
+            height=plot_dimensions[1] if plot_dimensions else None,
+            scale=2,
         )
     return fig
+
