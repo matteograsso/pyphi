@@ -36,7 +36,7 @@ def spring_force_simulation(
     )
 
     # initialize positions based on input argument
-    x, y, z = get_initial_positions(initial_positions)
+    x, y, z = get_initial_positions(ces, initial_positions)
 
     # simulating the spring force system
     path = equilibrate(

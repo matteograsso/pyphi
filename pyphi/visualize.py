@@ -4065,7 +4065,7 @@ def plot_ces_epicycles(
     #     ]
     if axes_range is None:
         axes_range = [
-            (min(d) - 1, max(d) + 1)
+            (min(d) - 10, max(d) + 10)
             for d in (np.append(x, xm), np.append(y, ym), np.append(z, zm))
         ]
 
