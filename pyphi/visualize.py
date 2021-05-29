@@ -1412,7 +1412,7 @@ def plot_ces_epicycles(
     ym = [p[1] for p in base_coords]
     zm = [p[2] for p in base_coords]
 
-    if user_mechanism_coords:
+    if user_mechanism_coords is not None:
         xm = user_mechanism_coords[0]
         ym = user_mechanism_coords[1]
         zm = user_mechanism_coords[2]
