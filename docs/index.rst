@@ -10,9 +10,10 @@ If you use this software in your research, please cite the paper:
     | *PLOS Computational Biology* 14(7): e1006343.
     | https://doi.org/10.1371/journal.pcbi.1006343
 
-An `illustrated tutorial on how Φ is calculated
-<https://doi.org/10.1371/journal.pcbi.1006343.s001>`_ is available as a
-supplement to the paper.
+A `jupyter notebook
+<https://doi.org/10.1371/journal.pcbi.1006343.s001>`_  illustrating how to use PyPhi is available as a
+supplement to the `IIT 4.0 paper
+<https://doi.org/10.1371/journal.pcbi.1006343.s001>`_.
 
 To report issues, use the issue tracker on the `GitHub repository
 <https://github.com/wmayner/pyphi>`_. Bug reports and pull requests are
