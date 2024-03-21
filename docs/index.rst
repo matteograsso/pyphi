@@ -3,6 +3,13 @@ PyPhi
 
 PyPhi is a Python library for computing integrated information.
 
+The latest formalism of Integrated Information Theory (IIT 4.0) is outlined in this paper:
+
+    | Albantakis L, Barbosa L, Findlay G, Grasso M, ... Tononi G. (2023)
+    | Integrated information theory (IIT) 4.0: formulating the properties of phenomenal existence in physical terms. 
+    | *PLoS Computational Biology* 19(10): e1011465.
+    | https://doi.org/10.1371/journal.pcbi.1011465
+
 If you use this software in your research, please cite the paper:
 
     | Mayner WGP, Marshall W, Albantakis L, Findlay G, Marchman R, Tononi G. (2018)
